@@ -177,14 +177,6 @@
 
 ## ⚡ نصب سریع (CLI)
 
-| پلتفرم | روش اجرا |
-|---------|----------|
-| 🐧 Linux | bash <(curl -fsSL ...) |
-| 📱 Android | نصب Termux از F-Droid → pkg install curl → دستور بالا |
-| 🍎 macOS | همون دستور بالا |
-| 🪟 Windows | نصب Git Bash یا WSL → اجرای دستور بالا |
-| 💻 هر سیستم | از طریق Hermes Agent (Telegram) هم میشه استفاده کرد |
-
 <details>
 <summary><b>v4.6.3</b></summary>
 

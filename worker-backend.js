@@ -197,10 +197,6 @@ export default {
         const enableR=await fetch(`https://api.cloudflare.com/client/v4/accounts/${aid}/workers/services/${workerName}/environments/production/subdomain`,{method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({enabled:true})});
         if(!enableR.ok)log('فعال‌سازی ناموفق');
 
-        // Wait for workers.dev propagation
-        log('صبر برای فعال‌سازی workers.dev...');
-        await new Promise(r=>setTimeout(r,30000));
-
         // Get subdomain via API
         log('دریافت ساب‌دامین...');
         let sub='';

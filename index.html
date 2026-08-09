@@ -74,31 +74,14 @@ body::after{
 .btn-test{background:transparent;color:var(--text2);border:2px solid var(--border);height:38px;padding:0 16px;font-size:.76rem;border-radius:8px}
 
 /* ===== ALERTS ===== */
-.alert{
-  padding:14px 18px;
-  border-radius:12px;
-  font-size:.84rem;
-  margin-bottom:16px;
-  display:flex;
-  align-items:flex-start;
-  gap:10px;
-  line-height:1.5;
-  backdrop-filter:blur(8px);
-}
-.alert-info{background:rgba(0,229,160,.08);border:1px solid rgba(0,229,160,.12);color:var(--cyan)}
-.alert-success{background:rgba(0,230,118,.06);border:1px solid rgba(0,230,118,.12);color:var(--green)}
-.alert-error{background:rgba(255,68,102,.06);border:1px solid rgba(255,68,102,.12);color:var(--red)}
-.alert-warn{background:rgba(255,170,0,.06);border:1px solid rgba(255,170,0,.12);color:var(--yellow)}
+.alert{padding:12px 16px;border-radius:var(--radius);font-size:.8rem;font-weight:600;margin-top:12px}
+.alert-info{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.15);color:var(--blue3)}
+.alert-success{background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.15);color:var(--green)}
+.alert-error{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.15);color:var(--red)}
+.alert-warn{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.15);color:var(--orange)}
 
 /* ===== SPINNER ===== */
-.spinner{
-  width:18px;height:18px;
-  border:2.5px solid var(--border2);
-  border-top-color:var(--cyan);
-  border-radius:50%;
-  animation:spin .8s linear infinite;
-  flex-shrink:0;display:inline-block;
-}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--text4);border-top-color:var(--blue);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-left:6px}
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* ===== DEPLOY LOG ===== */
@@ -326,47 +309,13 @@ body::after{
 .theme-toggle:hover{transform:scale(1.1);box-shadow:var(--shadow-lg);border-color:var(--cyan)}
 
 /* Connection Test */
-.test-result{
-  padding:14px 18px;
-  border-radius:12px;
-  font-size:.85rem;
-  margin-top:16px;
-  display:none;
-  align-items:center;
-  gap:10px;
-  line-height:1.5;
-  backdrop-filter:blur(8px);
-  animation:fadeIn .3s ease;
-  transition:all .3s;
-}
-.test-result.show{display:flex}
-.test-result.testing{
-  background:rgba(0,184,255,.06);
-  border:1px solid rgba(0,184,255,.12);
-  color:var(--cyan2);
-}
-.test-result.active{
-  background:rgba(0,230,118,.06);
-  border:1px solid rgba(0,230,118,.12);
-  color:var(--green);
-}
-.test-result.inactive{
-  background:rgba(255,68,102,.06);
-  border:1px solid rgba(255,68,102,.12);
-  color:var(--red);
-}
-.test-result.error{
-  background:rgba(255,170,0,.06);
-  border:1px solid rgba(255,170,0,.12);
-  color:var(--yellow);
-}
-.test-time{
-  font-family:var(--font-mono);
-  font-size:.78rem;
-  opacity:.7;
-  margin-right:auto;
-  direction:ltr;
-}
+.test-result{display:none;padding:16px;border-radius:var(--radius);text-align:center;font-weight:700;font-size:.88rem;margin-top:14px}
+.test-result.show{display:block;animation:popIn .4s cubic-bezier(.175,.885,.32,1.275) both}
+.test-result.testing{background:var(--bg3);border:1px solid var(--border);color:var(--text2)}
+.test-result.active{background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);color:var(--green)}
+.test-result.inactive{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);color:var(--red)}
+.test-result.error{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.15);color:var(--orange)}
+.test-time{display:block;font-size:.7rem;font-weight:500;opacity:.6;margin-top:4px}
 .speed-result{
   display:none;align-items:center;gap:10px;
   padding:14px 18px;border-radius:12px;margin-top:12px;
@@ -426,11 +375,7 @@ body::after{
   to{opacity:1;transform:translateY(0)}
 }
 
-.spinner{
-  display:inline-block;width:16px;height:16px;
-  border:2px solid var(--border);border-top-color:var(--accent);
-  border-radius:50%;animation:spin .6s linear infinite;
-}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--text4);border-top-color:var(--blue);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-left:6px}
 
 .result-box{animation:fadeIn .4s ease .2s both}
 </style>

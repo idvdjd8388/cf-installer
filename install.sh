@@ -7,6 +7,10 @@ echo -e "${C}╔═════════════════════�
 echo -e "${C}║    🔥 CF Installer v4.7.0       ║${NC}"
 echo -e "${C}╚══════════════════════════════════╝${NC}"
 command -v curl&>/dev/null||{echo -e "${R}❌ curl نصب نیست${NC}";exit 1;}
+echo -e "${Y}📝 اول توکن بساز:${NC}"
+echo -e "${W}   https://dash.cloudflare.com/profile/api-tokens${NC}"
+echo -e "${Y}   مجوز: Edit Cloudflare Workers${NC}"
+echo -e "${Y}   بعد توکن cfut_... رو کپی کن و اینجا بزن:${NC}"
 echo -e "${W}🔑 توکن API:${NC}";read -rp "   " TOKEN
 [[ -z "$TOKEN"||!"$TOKEN"==cfut_* ]]&&{echo -e "${R}❌ توکن نامعتبر${NC}";exit 1;}
 echo -e "${C}▶ بررسی...${NC}"

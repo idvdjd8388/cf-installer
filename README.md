@@ -54,7 +54,7 @@
 | 🦊 FoxCloud | 151+ | — | /sub |
 | 🇨🇳 amcf ⚠️ | 3.1k+ | KV | / |
 | 🛡️ ZQ-VTPanel | 62+ | KV | / |
-|| 🔧 v2ray-worker | 195+ | KV | / |
+| 🔧 v2ray-worker | 195+ | KV | / |
 
 > 💡 همه چیز **خودکار** ساخته میشه — D1، KV، UUID، رمز عبور!
 >

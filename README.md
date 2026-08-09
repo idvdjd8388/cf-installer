@@ -2,7 +2,7 @@
 
 ### نصب یک‌کلیکی پنل‌های VPN روی Cloudflare Worker
 
-[![v4.6.3](https://img.shields.io/badge/version-v4.6.3-00e5a0?style=flat-square)](https://arshiyashams675-sudo.github.io/cf-installer/)
+[![v4.7.0](https://img.shields.io/badge/version-v4.7.0-00e5a0?style=flat-square)](https://arshiyashams675-sudo.github.io/cf-installer/)
 [![Panels](https://img.shields.io/badge/پنل‌ها-10_عدد-blue?style=flat-square)](#-پنل‌های-پشتیبانی-شده)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](#)
 
@@ -174,6 +174,16 @@
 - ✅ اضافه شدن BPB apiToken
 
 </details>
+
+## ⚡ نصب سریع (CLI)
+
+| پلتفرم | روش اجرا |
+|---------|----------|
+| 🐧 Linux | bash <(curl -fsSL ...) |
+| 📱 Android | نصب Termux از F-Droid → pkg install curl → دستور بالا |
+| 🍎 macOS | همون دستور بالا |
+| 🪟 Windows | نصب Git Bash یا WSL → اجرای دستور بالا |
+| 💻 هر سیستم | از طریق Hermes Agent (Telegram) هم میشه استفاده کرد |
 
 <details>
 <summary><b>v4.6.3</b></summary>

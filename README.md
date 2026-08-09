@@ -93,7 +93,7 @@
 
 ### مرحله ۲: نصب پنل
 1. توکن رو وارد کنید (فرمت: `cfut_...`)
-2. یکی از ۹ پنل رو انتخاب کنید
+2. یکی از ۱۰ پنل رو انتخاب کنید
 3. روی **🚀 نصب و فعال‌سازی** بزنید — تمام! 🎉
 
 ### مرحله ۳: اتصال
@@ -152,7 +152,7 @@
 | amcf | — | `amclubs` | `UUID` |
 | VTPanel | — | `VTPanel` | — |
 | v2ray-worker | — | `settings` | — |
-| BPB Panel | — | `KV` | — |
+| BPB | — | `KV` | `EMBEDED_SETTINGS` |
 
 ---
 
@@ -171,7 +171,8 @@
 - ✅ فیکس Progress Bar (showNextLog با تأخیر 400ms)
 - ✅ لیست Workerهای فعال (loadWorkers + deleteWorker)
 - ✅ endpoint /list-workers
-- ✅ PANEL_TYPE برای هر ۹ پنل
+- ✅ PANEL_TYPE برای هر ۱۰ پنل
+- ✅ اضافه شدن پنل **BPB Panel** (VLESS + Trojan + Warp + DoH — 12k ⭐)
 
 </details>
 

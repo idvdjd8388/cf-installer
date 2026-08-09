@@ -334,6 +334,7 @@ body::after{
 .panel-card[data-p="amcf"]::before{background:linear-gradient(135deg,rgba(59,130,246,.08),rgba(239,68,68,.05))}
 .panel-card[data-p="vtpanel"]::before{background:linear-gradient(135deg,rgba(239,68,68,.08),rgba(168,85,247,.05))}
 .panel-card[data-p="v2ray"]::before{background:linear-gradient(135deg,rgba(0,184,255,.08),rgba(0,229,160,.05))}
+.panel-card[data-p="bpb"]::before{background:linear-gradient(135deg,rgba(0,184,255,.08),rgba(0,229,160,.05))}
 
 .panel-card:hover{
   border-color:var(--border3);
@@ -846,8 +847,7 @@ function render(){
         <div class="result-box"><div class="result-label">نام Worker</div><div class="result-value"><span id="resName"></span><button class="copy-btn" id="copyName">کپی</button></div></div>
         <div class="result-box"><div class="result-label">مسیر پنل</div><div class="result-value" style="color:var(--yellow)"><span id="resPath"></span><button class="copy-btn" id="copyPath">کپی</button></div></div>
         <div class="result-box" id="uuidBox" style="display:none"><div class="result-label">UUID (Cfnew)</div><div class="result-value"><span id="resUuid"></span><button class="copy-btn" id="copyUuid">کپی</button></div></div>
-        <div class="result-box"><div class="result-label">رمز عبور پیش‌فرض</div><div class="result-value" style="color:var(--red)"><span id="resPasswd">admin</span><button class="copy-btn" onclick="cpB(this,'admin')">کپی</button></div></div>
-        <div class="alert alert-warn">⚠️ بلافاصله رمز عبور را تغییر دهید!</div>
+        <div id="passwdBox" style="display:none"><div class="result-box"><div class="result-label">🔑 رمز پیش‌فرض</div><div class="result-value" style="color:var(--red)"><span id="resPasswd">admin</span><button class="copy-btn" onclick="cpB(this,'admin')">کپی</button></div></div><div class="alert alert-warn">⚠️ رمز رو عوض کنید!</div></div>
         <div id="edgtunPaths" style="display:none">
           <div class="result-box"><div class="result-label">🌐 VLESS کانفیگ</div><div class="result-value"><a id="edVless" href="#" target="_blank" style="color:var(--cyan);text-decoration:none;word-break:break-all;font-size:13px"></a><button class="copy-btn" id="copyEdVless">کپی</button></div></div>
           <div class="result-box"><div class="result-label">🔗 VLESS لینک مستقیم</div><div class="result-value"><a id="edVlessLink" href="#" target="_blank" style="color:var(--cyan);text-decoration:none;word-break:break-all;font-size:13px"></a><button class="copy-btn" id="copyEdVlessLink">کپی</button></div></div>
@@ -916,7 +916,7 @@ function render(){
     try{
       const r=await fetch(BACKEND+'/deploy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token,panelType:'validate'})});
       const d=await r.json();
-      if(d.success||d.logs?.length>0){
+      if(d.success){
         $('tokenResult').innerHTML='<div class="alert alert-success" style="margin-top:12px">✅ توکن معتبر است!</div>';
         $('panelCard').style.display='block';
         toast('✅ توکن معتبر!');
@@ -993,8 +993,13 @@ function render(){
         $('resultBox').style.display='block';
         // Dashboard link
         if(d.dashboardURL){
+          var old=document.getElementById('dashLink');if(old)old.remove();
           $('openPanel').insertAdjacentHTML('afterend','<a id="dashLink" href="'+esc(d.dashboardURL)+'" target="_blank" class="btn btn-secondary btn-sm" style="text-decoration:none">📋 داشبورد CF</a>');
         }
+
+        // Password box - only for panels with admin password
+        ['passwdBox'].forEach(id=>{$(id).style.display='none'});
+        if(['nahan','edge','nova'].includes(d.panelType))$('passwdBox').style.display='block';
 
         // Hide all special sections first
         ['uuidBox','edgtunPaths','foxPaths','amcfPaths','vtpanelPaths','v2rayPaths','bpbPaths'].forEach(id=>{$(id).style.display='none'});
@@ -1225,7 +1230,7 @@ function testConnection(){
   el.className='test-result show testing';
   el.innerHTML='<span class="spinner"></span> 🔄 در حال تست...';
   const t0=performance.now();
-  fetch(url,{redirect:'follow',mode:'no-cors'}).then(()=>{
+  fetch(url,{redirect:'follow'}).then(()=>{
     return fetch(url,{redirect:'follow'}).then(r=>{
       const ms=Math.round(performance.now()-t0);
       if(r.ok||r.status===302){
@@ -1262,14 +1267,14 @@ async function speedTest(){
   for(let i=0;i<rounds;i++){
     try{
       const t0=performance.now();
-      await fetch(url,{redirect:'follow',cache:'no-store',mode:'no-cors'});
+      await fetch(url,{redirect:'follow',cache:'no-store'});
       const ms=Math.round(performance.now()-t0);
       times.push(ms);
     }catch(e){const ms=Math.round(performance.now()-t0);times.push(ms||9999)}
     await new Promise(r=>setTimeout(r,300));
   }
 
-  const filtered=times.slice(1);
+  const filtered=times;
   const avg=Math.round(filtered.reduce((a,b)=>a+b,0)/filtered.length);
   const min=Math.min(...filtered);
   const max=Math.max(...filtered);

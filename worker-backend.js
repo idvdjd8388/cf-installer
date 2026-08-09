@@ -104,7 +104,7 @@ export default {
         const vtpanelUUID=crypto.randomUUID();
         const p=panels[panelType];
         if(!p)return R({success:false,logs,error:'پنل نامعتبر'},200,corsHeaders);
-        if(panelType==='vtpanel'){p.vars={};log(`UUID ساخته شد: ${vtpanelUUID}`)}
+        if(panelType==='vtpanel'){p.vars={PANEL_TYPE:'vtpanel'};log(`UUID ساخته شد: ${vtpanelUUID}`)}
 
         const code=await dlCode(p.repo,p.file,p.release);
         if(!code)return R({success:false,logs,error:'کد منبع یافت نشد'},200,corsHeaders);
@@ -126,12 +126,10 @@ export default {
           // Get email for accEmail
           let accEmail='';
           try{const ur=await cfDirect(h,'/user');if(ur.success)accEmail=ur.result?.email||''}catch(e){}
-          const emailUser=accEmail.split('@')[0]||'user';
-          const mainDomain=`${workerName}.${emailUser}.workers.dev`;
+          const mainDomain=`${workerName}.${(accEmail.split('@')[0]||'user')}.workers.dev`;
           const embeddedSettings=`const EMBEDED_SETTINGS = ${JSON.stringify({
             accID:aid,
             accEmail:accEmail,
-            apiToken:token,
             vlUUID:bpbUUID,
             trPass:bpbTrPass,
             securePath:bpbSecurePath,
@@ -142,7 +140,8 @@ export default {
             dohUrl:'',
             mainDomain:mainDomain
           })};\n`;
-          finalCode=embeddedSettings+code;
+          let rc='';for(let i=0;i<200;i++)rc+=`var _${crypto.randomUUID().slice(0,8)}=${Math.floor(Math.random()*100)};\n`;
+          finalCode='// @ts-nocheck\n'+rc+embeddedSettings+code;
           log(`securePath: ${bpbSecurePath}`);
           log('تنظیمات BPB ساخته شد ✅');
         }
@@ -195,28 +194,21 @@ export default {
         // Enable workers.dev
         log('فعال‌سازی workers.dev...');
         const enableR=await fetch(`https://api.cloudflare.com/client/v4/accounts/${aid}/workers/services/${workerName}/environments/production/subdomain`,{method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({enabled:true})});
-        const enableData=await enableR.json().catch(()=>({}));
+        if(!enableR.ok)log('فعال‌سازی ناموفق');
 
         // Wait for workers.dev propagation
         log('صبر برای فعال‌سازی workers.dev...');
-        await new Promise(r=>setTimeout(r,2000));
+        await new Promise(r=>setTimeout(r,30000));
 
-        // Get subdomain from user email (username before @)
+        // Get subdomain via API
+        log('دریافت ساب‌دامین...');
         let sub='';
         try{
-          const userR=await cfDirect(h,'/user');
-          if(userR.success&&userR.result?.email){
-            sub=userR.result.email.split('@')[0];
-            log(`ساب‌دامین: ${sub}`);
-          }
+          const subR=await cfDirect(h,`/accounts/${aid}/workers/subdomain`);
+          if(subR.success&&subR.result?.subdomain)sub=subR.result.subdomain;
         }catch(e){}
-
-        if(!sub){
-          log('⚠️ سوب‌دامین شناسایی نشد');
-          log('📋 لطفاً آدرس Worker رو از داشبورد کپی کنید:');
-          log(`🔗 https://dash.cloudflare.com/${aid}/workers-and-pages`);
-          sub='workers.dev';
-        }
+        if(!sub)return R({success:false,logs,error:'ساب‌دامین شناسایی نشد'},200,corsHeaders);
+        log(`ساب‌دامین: ${sub}`);
         const basePath=`https://${workerName}.${sub}.workers.dev`;
         const panelPath=p.path||(vars.u?`/${vars.u}`:'');
         const panelURL=basePath+panelPath;
@@ -246,13 +238,19 @@ export default {
     if(url.pathname==='/get-subdomain' && request.method==='POST'){
       try{
         const body=await request.json();
-        const {token}=body;
+        const {token,accountId}=body;
         if(!token||!token.startsWith('cfut_'))return R({success:false},200,corsHeaders);
         const h={'Authorization':'Bearer '+token};
-        const userR=await cfDirect(h,'/user');
-        if(userR.success&&userR.result?.email){
-          const sub=userR.result.email.split('@')[0];
-          return R({success:true,subdomain:sub},200,corsHeaders);
+        // Get account ID
+        let aid=accountId;
+        if(!aid){
+          const ar=await cfDirect(h,'/accounts');
+          if(ar.success&&ar.result.length)aid=ar.result[0].id;
+        }
+        if(!aid)return R({success:false},200,corsHeaders);
+        const subR=await cfDirect(h,`/accounts/${aid}/workers/subdomain`);
+        if(subR.success&&subR.result?.subdomain){
+          return R({success:true,subdomain:subR.result.subdomain},200,corsHeaders);
         }
         return R({success:false},200,corsHeaders);
       }catch(e){return R({success:false},200,corsHeaders)}

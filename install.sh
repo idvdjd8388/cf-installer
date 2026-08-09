@@ -7,11 +7,16 @@ echo -e "${C}╔═════════════════════�
 echo -e "${C}║    🔥 CF Installer v4.7.0       ║${NC}"
 echo -e "${C}╚══════════════════════════════════╝${NC}"
 command -v curl&>/dev/null||{echo -e "${R}❌ curl نصب نیست${NC}";exit 1;}
-echo -e "${Y}📝 اول توکن بساز:${NC}"
-echo -e "${W}   https://dash.cloudflare.com/profile/api-tokens${NC}"
-echo -e "${Y}   مجوز: Edit Cloudflare Workers${NC}"
-echo -e "${Y}   بعد توکن cfut_... رو کپی کن و اینجا بزن:${NC}"
-echo -e "${W}🔑 توکن API:${NC}";read -rp "   " TOKEN
+TOKEN_URL="https://dash.cloudflare.com/profile/api-tokens?permissionGroupKeys=%5B%7B%22key%22%3A%22workers_scripts%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22workers_kv_storage%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22d1%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22workers_settings%22%2C%22type%22%3A%22read%22%7D%2C%7B%22key%22%3A%22user_details%22%2C%22type%22%3A%22read%22%7D%5D&accountId=*&zoneId=all&name=CF-Installer"
+echo -e "${W}📝 برای ساخت توکن:${NC}"
+echo -e "   لینک زیر رو باز کن،"
+echo -e "   ${C}Continue to summary → Create Token${NC} بزن،"
+echo -e "   توکن رو کپی کن و اینجا بزن:"
+echo -e ""
+echo -e "   ${Y}${TOKEN_URL}${NC}"
+echo -e ""
+echo -e "${W}🔑 Cloudflare API Token:${NC}"
+read -rp "   " TOKEN
 [[ -z "$TOKEN"||!"$TOKEN"==cfut_* ]]&&{echo -e "${R}❌ توکن نامعتبر${NC}";exit 1;}
 echo -e "${C}▶ بررسی...${NC}"
 V=$(curl -s -X POST "$BACKEND/deploy" -H "Content-Type: application/json" -H "Origin: https://arshiyashams675-sudo.github.io" -d "{\"token\":\"$TOKEN\",\"panelType\":\"validate\"}")

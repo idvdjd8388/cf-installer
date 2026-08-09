@@ -5,57 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <title>CF Installer v4.7.0</title>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0a0a0f">
+<meta name="theme-color" content="#000">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#0a0a0f;
-  --bg2:#12121a;
-  --bg3:#1a1a26;
-  --bg4:#22223a;
-  --text:#e0e0ec;
-  --text2:#8888a0;
-  --text3:#55556a;
-  --cyan:#00e5a0;
-  --cyan2:#00b8ff;
-  --cyan-bg:rgba(0,229,160,.12);
-  --green:#00e676;
-  --green-bg:rgba(0,230,118,.08);
-  --red:#ff4466;
-  --red-bg:rgba(255,68,102,.08);
-  --yellow:#ffaa00;
-  --yellow-bg:rgba(255,170,0,.08);
-  --border:rgba(255,255,255,.06);
-  --border2:rgba(255,255,255,.1);
-  --border3:rgba(255,255,255,.15);
-  --radius:14px;
-  --radius2:20px;
-  --shadow:0 4px 24px rgba(0,0,0,.4);
-  --shadow-lg:0 12px 48px rgba(0,0,0,.6);
-  --font:'Vazirmatn',system-ui,-apple-system,sans-serif;
-  --font-mono:'SF Mono','Cascadia Code','Fira Code','JetBrains Mono',monospace;
-  --glow:0 0 40px rgba(0,229,160,.08);
-}
+:root{--bg:#000;--bg2:#0a0a0a;--bg3:#111;--bg4:#1a1a1a;--bg5:#222;--text:#f0f0f5;--text2:#999;--text3:#666;--text4:#555;--blue:#3b82f6;--blue2:#2563eb;--blue3:#60a5fa;--pink:#ec4899;--pink2:#db2777;--green:#22c55e;--red:#ef4444;--orange:#f59e0b;--cyan:#06b6d4;--yellow:#eab308;--border:rgba(255,255,255,.1);--border2:rgba(255,255,255,.05);--border3:rgba(255,255,255,.15);--radius:12px;--radius2:16px;--radius3:20px;--shadow:0 20px 60px rgba(0,0,0,.4);--shadow-lg:0 8px 32px rgba(0,0,0,.5);--font:'Inter',system-ui,sans-serif;--font-mono:'JetBrains Mono',monospace;--glow:0 0 30px rgba(59,130,246,.15)}
 html{font-size:15px;scroll-behavior:smooth}
-body{
-  font-family:var(--font);
-  background:var(--bg);
-  color:var(--text);
-  min-height:100vh;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  line-height:1.6;
-  padding-bottom:40px;
-  -webkit-font-smoothing:antialiased;
-  -moz-osx-font-smoothing:grayscale;
-}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 
 /* Scrollbar */
 *{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.1) transparent}
@@ -76,7 +37,7 @@ body::after{
   pointer-events:none;z-index:0;
 }
 
-.container{width:100%;max-width:680px;padding:0 20px;position:relative;z-index:1}
+.container{max-width:520px;margin:0 auto;padding:20px 14px 80px;position:relative;z-index:1}
 
 /* ===== HEADER ===== */
 .header{
@@ -334,7 +295,6 @@ body::after{
 .panel-card[data-p="amcf"]::before{background:linear-gradient(135deg,rgba(59,130,246,.08),rgba(239,68,68,.05))}
 .panel-card[data-p="vtpanel"]::before{background:linear-gradient(135deg,rgba(239,68,68,.08),rgba(168,85,247,.05))}
 .panel-card[data-p="v2ray"]::before{background:linear-gradient(135deg,rgba(0,184,255,.08),rgba(0,229,160,.05))}
-.panel-card[data-p="bpb"]::before{background:linear-gradient(135deg,rgba(0,184,255,.08),rgba(0,229,160,.05))}
 
 .panel-card:hover{
   border-color:var(--border3);
@@ -756,7 +716,7 @@ const PANELS={
   amcf:{name:'am-cf-tunnel',icon:'🇨🇳',desc:'VLESS + Trojan با Subscription — 3.1k ⭐',key:'amcf',proto:['VLESS','Trojan','DOMAIN'],tip:'VLESS + Trojan — Subscription — KV Storage — نیاز به دامنه'},
   vtpanel:{name:'ZQ-VTPanel',icon:'🛡️',desc:'پنل VTPanel با KV — جدید',key:'vtpanel',proto:['VLESS','Trojan'],tip:'VLESS + Trojan — UI مدیریتی — UUID در KV'},
   v2ray:{name:'v2ray-worker',icon:'🔧',desc:'پنل V2Ray پیشرفته با KV',key:'v2ray',proto:['VLESS','Trojan'],tip:'V2Ray Worker — VLESS + Trojan — Subscription — QR Code — KV'},
-  bpb:{name:'BPB Panel',icon:'💦',desc:'VLESS + Trojan + Warp + DoH',key:'bpb',proto:['VLESS','Trojan'],tip:'پنل حرفه‌ای با Warp و DoH'}
+
 
 };
 
@@ -770,13 +730,13 @@ const PANELS_CONFIG={
   amcf:{repo:'am883478014/cf-proxy',file:'cf-proxy/_worker.js',vars:{},path:'/'},
   vtpanel:{repo:'bayueqi/ZQ-VTPanel',file:'_worker.js',kv:['VTPanel'],vars:{},path:'/'},
   v2ray:{repo:'vfarid/v2ray-worker',file:'worker.js',release:'v2.4',kv:['settings'],vars:{},path:'/'},
-  bpb:{repo:'bia-pain-bache/BPB-Worker-Panel',file:'worker.js',release:'v5.1.1',kv:['KV'],vars:{},path:''},
+
 
 };
 
 const PANEL_STARS={
   nahan:3082,edge:41735,cfnew:14694,nova:3207,edgtun:2989,
-  fox:151,amcf:3126,vtpanel:62,v2ray:195,bpb:12000
+  fox:151,amcf:3126,vtpanel:62,v2ray:195
 };
 
 let selectedPanel=null;
@@ -793,7 +753,7 @@ const DEPLOY_REPOS={
   amcf:{repo:'amclubs/am-cf-tunnel',file:'_worker.js'},
   vtpanel:{repo:'bayueqi/ZQ-VTPanel',file:'_worker.js'},
   v2ray:{repo:'vfarid/v2ray-worker',file:'worker.js',release:'v2.4'},
-  bpb:{repo:'bia-pain-bache/BPB-Worker-Panel',file:'worker.js',release:'v5.1.1'}
+
 };
 // Theme functions
 function applyTheme(t){document.documentElement.setAttribute('data-theme',t);const b=$('themeToggle');if(b)b.textContent=t==='light'?'🌙':'☀️'}
@@ -872,11 +832,7 @@ function render(){
           <div class="result-box"><div class="result-label">📊 صفحه وضعیت</div><div class="result-value"><a id="vtpRoot" href="#" target="_blank" style="color:var(--cyan);text-decoration:none;word-break:break-all;font-size:13px"></a><button class="copy-btn" id="copyVtpRoot">کپی</button></div></div>
           <div class="result-box"><div class="result-label">🔑 رمز ورود</div><div class="result-value" style="color:var(--yellow)"><span id="vtpPass">admin</span><button class="copy-btn" onclick="cpB(this,'admin')">کپی</button></div></div>
         </div>
-        <div id="bpbPaths" style="display:none">
-          <div class="result-box"><div class="result-label">📊 صفحه پنل</div><div class="result-value"><a id="bpbPanelUrl" href="#" target="_blank" style="color:var(--cyan);text-decoration:none;word-break:break-all;font-size:13px"></a><button class="copy-btn" id="copyBpbPanel">کپی</button></div></div>
-          <div class="result-box"><div class="result-label">🆔 UUID</div><div class="result-value" style="direction:ltr"><span id="bpbUuid">-</span><button class="copy-btn" id="copyBpbUuid">کپی</button></div></div>
-          <div class="result-box"><div class="result-label">🔑 رمز عبور</div><div class="result-value" style="color:var(--yellow)"><span id="bpbTrPass">-</span><button class="copy-btn" id="copyBpbPass">کپی</button></div></div>
-        </div>
+
 
 
         <div class="btn-group"><button class="btn btn-secondary btn-sm" id="testBtn" onclick="testConnection()">📊 تست اتصال</button><button class="btn btn-secondary btn-sm" onclick="speedTest()" id="speedBtn">⚡ تست سرعت</button><a id="openPanel" href="#" target="_blank" class="btn btn-primary">باز کردن پنل</a><button class="btn btn-secondary" id="updateBtn">🔄 بروزرسانی</button><button class="btn btn-danger" id="deleteBtn">🗑️ حذف Worker</button><button class="btn btn-secondary" onclick="render()">نصب جدید</button></div>
@@ -1002,7 +958,7 @@ function render(){
         if(['nahan','edge','nova'].includes(d.panelType))$('passwdBox').style.display='block';
 
         // Hide all special sections first
-        ['uuidBox','edgtunPaths','foxPaths','amcfPaths','vtpanelPaths','v2rayPaths','bpbPaths'].forEach(id=>{$(id).style.display='none'});
+        ['uuidBox','edgtunPaths','foxPaths','amcfPaths','vtpanelPaths','v2rayPaths'].forEach(id=>{$(id).style.display='none'});
 
         // Show UUID for Cfnew
         if(d.uuid){
@@ -1084,17 +1040,7 @@ function render(){
           $('copyV2raySub').addEventListener('click',function(){cpB(this,subUrl)});
         }
 
-        // BPB Panel paths
-        if(d.panelType==='bpb'){
-          $('bpbPaths').style.display='block';
-          const panelUrl=d.panelURL;
-          $('bpbPanelUrl').textContent=panelUrl;$('bpbPanelUrl').href=panelUrl;
-          $('bpbUuid').textContent=d.uuid||'-';
-          $('bpbTrPass').textContent=d.trPass||'-';
-          $('copyBpbPanel').addEventListener('click',function(){cpB(this,panelUrl)});
-          if(d.uuid)$('copyBpbUuid').addEventListener('click',function(){cpB(this,d.uuid)});
-          if(d.trPass)$('copyBpbPass').addEventListener('click',function(){cpB(this,d.trPass)});
-        }
+
 
 
         $('copyUrl').addEventListener('click',function(){cpB(this,$('resUrlInput').value)});

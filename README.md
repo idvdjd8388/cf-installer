@@ -177,6 +177,20 @@
 
 ## ⚡ نصب سریع (CLI)
 
+| پلتفرم | روش اجرا |
+|---------|----------|
+| 🐧 Linux | دستور بالا |
+| 📱 Android | [Termux](https://f-droid.org/packages/com.termux/) نصب کن → pkg install curl → دستور بالا |
+| 🍎 macOS | دستور بالا (curl پیش‌فرض هست) |
+| 🪟 Windows | [Git Bash](https://git-scm.com/download/win) یا [WSL](https://aka.ms/wsl) → دستور بالا |
+
+**مراحل:**
+1. لینک ساخت توکن نمایش داده میشه → مرورگر باز کن
+2. Continue to summary → Create Token بزن
+3. توکن رو کپی کن و برگرد
+4. پنل رو انتخاب کن
+5. تمام!
+
 <details>
 <summary><b>v4.6.3</b></summary>
 

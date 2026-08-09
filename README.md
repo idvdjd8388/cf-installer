@@ -3,7 +3,7 @@
 ### نصب یک‌کلیکی پنل‌های VPN روی Cloudflare Worker
 
 [![v4.7.0](https://img.shields.io/badge/version-v4.7.0-00e5a0?style=flat-square)](https://arshiyashams675-sudo.github.io/cf-installer/)
-[![Panels](https://img.shields.io/badge/پنل‌ها-10_عدد-blue?style=flat-square)](#-پنل‌های-پشتیبانی-شده)
+[![Panels](https://img.shields.io/badge/پنل‌ها-9_عدد-blue?style=flat-square)](#-پنل‌های-پشتیبانی-شده)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](#)
 
 <p align="center">
@@ -54,8 +54,7 @@
 | 🦊 FoxCloud | 151+ | — | /sub |
 | 🇨🇳 amcf ⚠️ | 3.1k+ | KV | / |
 | 🛡️ ZQ-VTPanel | 62+ | KV | / |
-| 🔧 v2ray-worker | 195+ | KV | / |
-| 💦 BPB Panel | 12k+ | KV | `/{securePath}/panel` |
+|| 🔧 v2ray-worker | 195+ | KV | / |
 
 > 💡 همه چیز **خودکار** ساخته میشه — D1، KV، UUID، رمز عبور!
 >
@@ -151,8 +150,7 @@
 | FoxCloud | — | — | `UUID`, `PROXY_IP` |
 | amcf | — | `amclubs` | `UUID` |
 | VTPanel | — | `VTPanel` | — |
-| v2ray-worker | — | `settings` | — |
-| BPB | — | `KV` | `EMBEDED_SETTINGS` |
+|| v2ray-worker | — | `settings` | — |
 
 ---
 
@@ -176,6 +174,10 @@
 </details>
 
 ## ⚡ نصب سریع (CLI)
+
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/arshiyashams675-sudo/cf-installer/main/install.sh)
+```
 
 | پلتفرم | روش اجرا |
 |---------|----------|

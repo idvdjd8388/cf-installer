@@ -6,7 +6,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<title>CF Installer v4.7.0</title>
+<title>CF Installer v4.8.0</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#000">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -120,12 +120,7 @@ body::after{
 .copy-btn:hover{background:var(--bg5);color:var(--text)}
 .copy-btn.copied{background:rgba(34,197,94,.1);color:var(--green);border-color:rgba(34,197,94,.2)}
 
-.divider{
-  border:none;
-  height:1px;
-  background:linear-gradient(90deg,transparent,var(--border2),transparent);
-  margin:24px 0;
-}
+.divider{border:none;border-top:1px solid var(--border);margin:20px 0}
 
 /* ===== TOAST ===== */
 .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-100px);background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:10px 20px;font-size:.8rem;font-weight:600;z-index:999;transition:all .3s cubic-bezier(.16,1,.3,1);pointer-events:none;color:var(--text)}
@@ -187,7 +182,7 @@ body::after{
 
 /* Tooltip */
 .panel-card{position:relative}
-.tooltip{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:var(--bg4);color:var(--text);border:1px solid var(--border2);border-radius:8px;padding:8px 12px;font-size:12px;line-height:1.5;white-space:nowrap;opacity:0;visibility:hidden;transition:all .2s;z-index:100;pointer-events:none;max-width:250px;white-space:normal;text-align:center}
+.tooltip{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:var(--bg4);color:var(--text);border:1px solid var(--border3);border-radius:8px;padding:8px 12px;font-size:.68rem;line-height:1.5;opacity:0;visibility:hidden;transition:all .2s;z-index:100;pointer-events:none;max-width:250px;white-space:normal;text-align:center}
 .tooltip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:var(--bg4)}
 .panel-card:hover .tooltip,.panel-card:active .tooltip{opacity:1;visibility:visible}
 
@@ -310,6 +305,26 @@ body::after{
 .spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--text4);border-top-color:var(--blue);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-left:6px}
 
 .result-box{animation:fadeIn .4s ease .2s both}
+
+/* Light Theme */
+[data-theme="light"]{--bg:#f5f5f5;--bg2:#fff;--bg3:#eee;--bg4:#ddd;--bg5:#ccc;--text:#111;--text2:#555;--text3:#888;--text4:#aaa;--border:rgba(0,0,0,.1);--border2:rgba(0,0,0,.05);--border3:rgba(0,0,0,.15)}
+[data-theme="light"] .panel-card{background:rgba(0,0,0,.02)}
+[data-theme="light"] .card{background:#fff}
+
+/* Animations */
+@keyframes popIn{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
+@keyframes cardIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bg5);border-radius:3px}
+
+/* Responsive */
+@media(max-width:480px){.container{padding:12px 10px 60px}.header{padding:56px 0 28px}.logo{font-size:1.7rem}.panel-grid{gap:6px}.panel-card{padding:14px 4px 10px}.panel-icon-wrap{font-size:1.3rem}.card{padding:20px}.btn-group{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 </style>
 </head>
 <body>
@@ -317,7 +332,7 @@ body::after{
   <header class="header">
     <div class="logo">CF INSTALLER</div>
     <div class="logo-sub">نصب‌کننده خودکار پنل‌های Cloudflare Worker</div>
-    <div class="logo-ver">v4.7.0</div>
+    <div class="logo-ver">v4.8.0</div>
     <a href="https://t.me/Cf_Arshia_Bot" target="_blank" class="btn btn-secondary btn-sm" style="margin-top:14px;text-decoration:none">🤖 ربات تلگرام</a>
   </header>
   <div id="content"></div>

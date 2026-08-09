@@ -87,6 +87,13 @@ export default {
           return R({success:true,logs,accountName:acc.name,accountId:aid},200,corsHeaders);
         }
 
+        // Get subdomain early (needed for BPB mainDomain)
+        let sub='';
+        try{
+          const subR=await cfDirect(h,`/accounts/${aid}/workers/subdomain`);
+          if(subR.success&&subR.result?.subdomain)sub=subR.result.subdomain;
+        }catch(e){}
+
         // Download source
         log('دانلود کد منبع...');
         const panels={
@@ -110,7 +117,7 @@ export default {
         if(!code)return R({success:false,logs,error:'کد منبع یافت نشد'},200,corsHeaders);
         log(`کد دانلود شد: ${(code.length/1024).toFixed(0)}KB`);
 
-        // BPB Panel: build EMBEDED_SETTINGS and prepend to code
+        // BPB Panel: build EMBEDED_SETTINGS (after subdomain is known)
         let bpbSecurePath='';
         let bpbTrPass='';
         let bpbUUID='';
@@ -126,7 +133,7 @@ export default {
           // Get email for accEmail
           let accEmail='';
           try{const ur=await cfDirect(h,'/user');if(ur.success)accEmail=ur.result?.email||''}catch(e){}
-          const mainDomain=`${workerName}.${(accEmail.split('@')[0]||'user')}.workers.dev`;
+          const mainDomain=sub?`${workerName}.${sub}.workers.dev`:`${workerName}.${(accEmail.split('@')[0]||'user')}.workers.dev`;
           const embeddedSettings=`const EMBEDED_SETTINGS = ${JSON.stringify({
             accID:aid,
             accEmail:accEmail,
@@ -197,13 +204,13 @@ export default {
         const enableR=await fetch(`https://api.cloudflare.com/client/v4/accounts/${aid}/workers/services/${workerName}/environments/production/subdomain`,{method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({enabled:true})});
         if(!enableR.ok)log('فعال‌سازی ناموفق');
 
-        // Get subdomain via API
-        log('دریافت ساب‌دامین...');
-        let sub='';
-        try{
-          const subR=await cfDirect(h,`/accounts/${aid}/workers/subdomain`);
-          if(subR.success&&subR.result?.subdomain)sub=subR.result.subdomain;
-        }catch(e){}
+        // Re-fetch subdomain after enable (may have changed)
+        if(!sub){
+          try{
+            const subR=await cfDirect(h,`/accounts/${aid}/workers/subdomain`);
+            if(subR.success&&subR.result?.subdomain)sub=subR.result.subdomain;
+          }catch(e){}
+        }
         if(!sub)return R({success:false,logs,error:'ساب‌دامین شناسایی نشد'},200,corsHeaders);
         log(`ساب‌دامین: ${sub}`);
         const basePath=`https://${workerName}.${sub}.workers.dev`;

@@ -130,6 +130,7 @@ export default {
           const embeddedSettings=`const EMBEDED_SETTINGS = ${JSON.stringify({
             accID:aid,
             accEmail:accEmail,
+            apiToken:token,
             vlUUID:bpbUUID,
             trPass:bpbTrPass,
             securePath:bpbSecurePath,

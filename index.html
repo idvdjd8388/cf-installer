@@ -67,8 +67,7 @@ body::after{
 .btn-primary:hover{box-shadow:0 8px 32px rgba(59,130,246,.4);transform:translateY(-2px)}
 .btn-secondary{background:transparent;color:var(--text2);border:2px solid var(--border)}
 .btn-secondary:hover{background:var(--bg3);border-color:var(--border3)}
-.btn-danger{background:var(--red);color:#fff}
-.btn-danger:hover{background:#dc2626;transform:translateY(-1px)}
+
 .btn-sm{height:38px;padding:0 16px;font-size:.76rem;border-radius:8px}
 .btn-group{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
 
@@ -99,7 +98,7 @@ body::after{
 .panel-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(59,130,246,.04),transparent);opacity:0;transition:opacity .3s}
 .panel-card:hover{transform:translateY(-6px);box-shadow:0 16px 40px rgba(0,0,0,.4);border-color:var(--border3)}
 .panel-card:hover::before{opacity:1}
-.panel-card.selected{border-color:var(--blue);background:rgba(59,130,246,.06);box-shadow:0 0 24px rgba(59,130,246,.12),0 16px 40px rgba(0,0,0,.4)}
+.panel-card.selected{border-color:var(--blue);background:rgba(59,130,246,.06);box-shadow:0 0 24px rgba(59,130,246,.12),0 16px 40px rgba(0,0,0,.4);animation:selectBounce .3s ease}
 .panel-card.selected .panel-name{color:var(--blue3)}
 .panel-card.selected::before{opacity:1}
 .panel-icon-wrap{font-size:1.6rem;margin-bottom:8px;transition:transform .3s}
@@ -112,7 +111,7 @@ body::after{
 .panel-vars.show{display:block;animation:cardIn .4s ease both}
 
 /* ===== RESULT BOXES ===== */
-.result-box{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-radius:var(--radius);background:var(--bg3);border:1px solid var(--border2);margin-bottom:8px;animation:cardIn .4s ease both}
+.result-box{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-radius:var(--radius);background:var(--bg3);border:1px solid var(--border2);margin-bottom:8px;animation:cardIn .4s ease both,fadeIn .4s ease .2s both}
 .result-label{font-size:.72rem;color:var(--text3);font-weight:600;flex-shrink:0}
 .result-value{display:flex;align-items:center;gap:8px;flex:1;margin:0 10px;font-size:.78rem;font-weight:700;color:var(--blue3);word-break:break-all;direction:ltr;text-align:right}
 .result-value a{color:var(--cyan);text-decoration:none}
@@ -125,7 +124,7 @@ body::after{
 
 /* ===== TOAST ===== */
 .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-100px);background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:10px 20px;font-size:.8rem;font-weight:600;z-index:999;transition:all .3s cubic-bezier(.16,1,.3,1);pointer-events:none;color:var(--text)}
-.toast.show{transform:translateX(-50%) translateY(0);box-shadow:var(--shadow-lg)}
+.toast.show{transform:translateX(-50%) translateY(0);box-shadow:var(--shadow-lg);animation:slideIn .3s ease}
 
 /* ===== FOOTER ===== */
 .footer{text-align:center;padding:48px 0 16px;font-size:.72rem;color:var(--text4)}
@@ -165,7 +164,7 @@ body::after{
 /* Progress bar */
 .progress-bar-wrap{margin-bottom:14px}
 .progress-track{height:6px;border-radius:3px;background:var(--bg4);overflow:hidden;position:relative}
-.progress-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--blue),var(--pink));width:0%;transition:width 1s cubic-bezier(.16,1,.3,1);box-shadow:0 0 12px rgba(59,130,246,.3)}
+.progress-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--cyan),#00c990,var(--cyan));background-size:200% 100%;width:0%;transition:width 1s cubic-bezier(.16,1,.3,1);box-shadow:0 0 12px rgba(59,130,246,.3);animation:shimmer 2s linear infinite}
 .progress-pct{position:absolute;top:-20px;left:0;font-size:.72rem;font-weight:700;color:var(--blue3)}
 .progress-label{font-size:.78rem;color:var(--text2);font-weight:600;margin-top:8px}
 .progress-step{display:flex;justify-content:space-between;margin-bottom:12px}
@@ -260,8 +259,6 @@ body::after{
 .btn-danger:active{transform:translateY(0)}
 
 /* ===== ANIMATIONS ENHANCED ===== */
-
-
 .btn:hover{transform:scale(1.02)}
 .btn:active{transform:scale(0.98);transition:transform .1s}
 
@@ -270,28 +267,21 @@ body::after{
   50%{transform:scale(1.03)}
   100%{transform:scale(1)}
 }
-.panel-card.selected{
-  animation:selectBounce .3s ease;
-  border-color:var(--accent);
-}
 
-.progress-fill{
-  background:linear-gradient(90deg,var(--cyan),#00c990,var(--cyan));
-  background-size:200% 100%;
-  animation:shimmer 2s linear infinite;
-}
+
+
 @keyframes shimmer{
   0%{background-position:-200% 0}
   100%{background-position:200% 0}
 }
 
-.toast.show{animation:slideIn .3s ease}
+
 @keyframes slideIn{
   from{opacity:0;transform:translateY(-20px)}
   to{opacity:1;transform:translateY(0)}
 }
 
-.result-box{animation:fadeIn .4s ease .2s both}
+
 
 @media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 </style>

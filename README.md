@@ -159,20 +159,33 @@
 ## 📝 تغییرات
 
 <details>
-<summary><b>v4.6.3</b> — آخرین نسخه</summary>
+<summary><b>v4.7.0</b></summary>
 
-- ✅ فیکس نام فایل cfnew (`明文源吗` به جای `worker.js`)
-- ✅ جایگزینی UUID سخت‌کد شده cfnew هنگام دیپلوی
-- ✅ فیکس `panelPath` برای پنل‌های UUID‌دار (cfnew + edgtun)
-- ✅ پیام "۱ دقیقه صبر کنید" هنگام انتخاب پنل
-- ✅ تشخیص سوب‌دامین با proxy + ۳ بار retry (۱۰ ثانیه صبر)
-- ✅ کاهش زمان انتظار workers.dev از ۱۰ ثانیه به ۲ ثانیه
-- ✅ نمایش "در حال استقرار" با progress bar بدون backtick اضافی
-- ✅ فیکس Progress Bar (showNextLog با تأخیر 400ms)
-- ✅ لیست Workerهای فعال (loadWorkers + deleteWorker)
-- ✅ endpoint /list-workers
-- ✅ PANEL_TYPE برای هر ۱۰ پنل
 - ✅ اضافه شدن پنل **BPB Panel** (VLESS + Trojan + Warp + DoH — 12k ⭐)
+- ✅ فیکس ساب‌دامین (API /workers/subdomain)
+- ✅ فیکس propagation (حذف انتظار اضافی)
+- ✅ فیکس BPB Error 1101 (@ts-nocheck + random vars)
+- ✅ فیکس رمز admin (فقط nahan/edge/nova)
+- ✅ فیکس speed test و testConnection (no-cors حذف شد)
+- ✅ فیکس dashLink تکراری
+- ✅ اضافه شدن CSS BPB panel card
+- ✅ فیکس VTPanel PANEL_TYPE
+- ✅ فیکس token validation
+- ✅ اضافه شدن BPB apiToken
+
+</details>
+
+<details>
+<summary><b>v4.6.3</b></summary>
+
+- ✅ فیکس نام فایل cfnew
+- ✅ فیکس `panelPath` برای پنل‌های UUID‌دار
+- ✅ تشخیص سوب‌دامین با proxy
+- ✅ کاهش زمان انتظار workers.dev از ۱۰ ثانیه به ۲ ثانیه
+- ✅ نمایش progress bar
+- ✅ لیست Workerهای فعال
+- ✅ PANEL_TYPE برای هر ۱۰ پنل
+- ✅ اضافه شدن پنل **v2ray-worker**
 
 </details>
 

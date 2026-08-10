@@ -819,13 +819,40 @@ async function quickUpdate(name,panelType){
     const branch=repoCfg.release||'main';
     const srcUrl='https://raw.githubusercontent.com/'+repoCfg.repo+'/'+branch+'/'+repoCfg.file;
     const srcR=await fetch(BACKEND+'/github',{method:'POST',headers:{'Content-Type':'application/json','X-GitHub-Url':srcUrl}});
-    const srcData=await srcR.json();
-    if(!srcData.code){toast('❌ کد منبع یافت نشد');return}
-    const wr=await fetch(BACKEND+'/cf',{method:'POST',headers:{'Authorization':'Bearer '+deployState.token,'Content-Type':'application/json','X-CF-Path':'/accounts/'+deployState.accountId+'/workers/scripts/'+name,'X-CF-Method':'PUT','X-CF-Body':srcData.code}});
-    const wd=await wr.json();
-    if(wd.success){toast('✅ آپدیت شد!');location.reload();}
-    else toast('❌ خطا: '+(wd.errors?.[0]?.message||'آپدیت ناموفق'));
+    const srcText=await srcR.text();
+    if(!srcR.ok||srcText.includes('404'))throw new Error('کد منبع یافت نشد');
+    const metaR=await fetch(BACKEND+'/cf',{method:'POST',headers:{'Authorization':'Bearer '+deployState.token,'Content-Type':'application/json','X-CF-Path':'/accounts/'+deployState.accountId+'/workers/scripts/'+name,'X-CF-Method':'GET'}});
+    const metaD=await metaR.json();
+    let bindings=[];
+    if(metaD.success&&metaD.result)bindings=metaD.result.bindings||[];
+    const metadata={main_module:'worker.js',compatibility_date:'2024-09-22',compatibility_flags:['nodejs_compat'],bindings:bindings};
+    const fd=new FormData();
+    fd.append('metadata',new Blob([JSON.stringify(metadata)],{type:'application/json'}));
+    fd.append('worker.js',new Blob([srcText],{type:'application/javascript+module'}),'worker.js');
+    const putR=await fetch(BACKEND+'/cf',{method:'POST',headers:{'Authorization':'Bearer '+deployState.token,'X-CF-Path':'/accounts/'+deployState.accountId+'/workers/scripts/'+name,'X-CF-Method':'PUT'},body:fd});
+    const putD=await putR.json();
+    if(!putD.success)throw new Error('خطا در آپدیت');
+    toast('✅ آپدیت کامل شد!');
+    document.getElementById('workerListCard')?.remove();location.reload();
   }catch(e){toast('❌ '+e.message)}
+}
+
+function testWorkerConnection(btn,url){
+  const card=btn.closest('.result-box');
+  const el=card.querySelector('.test-result');
+  if(!el)return;
+  el.className='test-result show testing';
+  el.innerHTML='<span class="spinner"></span> 🔄 در حال تست...';
+  const t0=performance.now();
+  Promise.all([
+    fetch(url,{mode:'no-cors'}).then(()=>({ok:true})).catch(()=>({ok:false})),
+    fetch(url+'/?t='+Date.now(),{mode:'no-cors'}).then(()=>({ok:true})).catch(()=>({ok:false}))
+  ]).then(([r1,r2])=>{
+    const ms=Math.round(performance.now()-t0);
+    const ok=r1.ok||r2.ok;
+    el.className='test-result show '+(ok?'success':'error');
+    el.innerHTML=ok?`✅ اتصال برقرار (${ms}ms)`:`❌ اتصال برقرار نشد`;
+  });
 }
 
 render();

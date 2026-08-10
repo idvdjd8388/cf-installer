@@ -91,8 +91,24 @@ export default {
         let sub='';
         try{
           const subR=await cfDirect(h,`/accounts/${aid}/workers/subdomain`);
-          if(subR.success&&subR.result?.subdomain)sub=subR.result.subdomain;
-        }catch(e){}
+          log(`ساب‌دامین raw: ${JSON.stringify(subR)}`);
+          if(subR&&subR.success){
+            if(subR.result&&subR.result.subdomain) sub=subR.result.subdomain;
+            else if(subR.result&&typeof subR.result==='string') sub=subR.result;
+            else if(typeof subR.result==='object'&&subR.result) sub=subR.result.subdomain||subR.result.result||'';
+          }
+          if(sub&&sub.includes('.')) sub=sub.split('.')[0];
+        }catch(e){log(`خطا ساب‌دامین: ${e.message}`)}
+        if(!sub){
+          try{
+            const uR=await cfDirect(h,'/user');
+            if(uR&&uR.success&&uR.result&&uR.result.username){
+              sub=uR.result.username;
+              log(`ساب‌دامین (fallback user): ${sub}`);
+            }
+          }catch(e){}
+        }
+        log(`ساب‌دامین نهایی: ${sub||'یافت نشد'}`);
 
         // Download source
         log('دانلود کد منبع...');

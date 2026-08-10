@@ -540,7 +540,7 @@ function render(){
         showNextLog();
       }
       
-      if(d.success){
+      if(d.success||d.workerName){
         setProgress(100,'نصب موفق ✅');$('deployLog').innerHTML+='<br><span class="log-ok">✅ نصب با موفقیت انجام شد!</span><br><span class="log-info">⏳ چند دقیقه صبر کنید تا ورکر فعال شود</span>';
         $('resUrlInput').value=d.panelURL;
         $('resName').textContent=d.workerName;

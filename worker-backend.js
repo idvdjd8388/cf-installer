@@ -219,7 +219,13 @@ export default {
           await new Promise(r=>setTimeout(r,2000));
           try{const subR2=await cfDirect(h,`/accounts/${aid}/workers/subdomain`);if(subR2.success&&subR2.result?.subdomain)sub=subR2.result.subdomain;}catch(e){}
         }
-        if(!sub){log('⚠️ ساب‌دامین شناسایی نشد');return R({success:false,logs,error:'ساب‌دامین شناسایی نشد — Worker مستقر شد ولی ساب‌دامین قابل شناسایی نیست. از داشبورد CF استفاده کنید.',workerName,dashboardURL:`https://dash.cloudflare.com/${aid}/workers-and-pages`},200,corsHeaders);}
+        if(!sub){log('⚠️ ساب‌دامین شناسایی نشد — تلاش نهایی...');try{const subR2=await cfDirect(h,`/accounts/${aid}/workers/subdomain`);if(subR2.success&&subR2.result?.subdomain)sub=subR2.result.subdomain;}catch(e){}}
+        if(!sub){
+          log('⚠️ ساب‌دامین شناسایی نشد — Worker مستقر شد ولی آدرس workers.dev قابل شناسایی نیست');
+          log('💡 از داشبورد Cloudflare آدرس Worker را پیدا کنید');
+          const dashboardURL=`https://dash.cloudflare.com/${aid}/workers-and-pages`;
+          return R({success:true,logs,panelURL:'',workerName,panelType,uuid:vars.u||vars.UUID||vars.ID||null,panelPath:'/',dashboardURL},200,corsHeaders);
+        }
         const basePath=`https://${workerName}.${sub}.workers.dev`;
         const panelPath=p.path||(vars.u?`/${vars.u}`:'');
         const panelURL=basePath+panelPath;

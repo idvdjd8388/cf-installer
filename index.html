@@ -488,6 +488,14 @@ function render(){
             localStorage.setItem('cf_subdomain',subData.subdomain);
           }
         }catch(e){}
+        // Fetch worker list
+        try{
+          const wlRes=await fetch(BACKEND+'/list-workers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token})});
+          const wlData=await wlRes.json();
+          if(wlData.success&&wlData.workers&&wlData.workers.length){
+            renderWorkerList(wlData.workers);
+          }
+        }catch(e){}
       } else {
         $('tokenResult').innerHTML=`<div class="alert alert-error" style="margin-top:12px">❌ ${esc(d.error||'خطا')}</div>`;
       }
@@ -755,6 +763,69 @@ async function updateWorker(){
     toast('❌ بروزرسانی ناموفق');
     rb.style.display='block';
   }
+}
+
+function renderWorkerList(workers){
+  const old=document.getElementById('workerListCard');if(old)old.remove();
+  const el=document.createElement('div');
+  el.id='workerListCard';
+  el.className='card';
+  el.innerHTML=`<h3 style="margin:0 0 4px 0">📋 ورکرهای شما (${workers.length})</h3><p style="opacity:0.5;font-size:0.85rem;margin:0 0 12px 0">نوع پنل خودکار تشخیص داده شده</p><div id="workerListItems"></div>`;
+  const pc=document.getElementById('panelCard');
+  if(pc&&pc.parentNode)pc.parentNode.insertBefore(el,pc);
+  const list=$('workerListItems');
+  workers.forEach(w=>{
+    const div=document.createElement('div');
+    div.className='result-box';
+    div.style.cssText='margin-bottom:10px;padding:12px';
+    div.innerHTML=`
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <div style="display:flex;align-items:center;gap:8px;min-width:0">
+          <span style="font-size:1.4rem">${w.panelIcon}</span>
+          <div style="min-width:0">
+            <div style="font-weight:600;word-break:break-all">${esc(w.name)}</div>
+            <div style="opacity:0.5;font-size:0.8rem">${esc(w.panelName)} · ${esc(w.panelType)}</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          ${w.url?`<a href="${esc(w.url)}" target="_blank" class="btn btn-secondary btn-sm" style="font-size:0.75rem">🔗</a>`:''}
+          <button class="btn btn-sm" style="background:var(--blue);color:#fff;font-size:0.75rem" onclick="quickUpdate('${esc(w.name)}','${esc(w.panelType)}')">🔄</button>
+          <button class="btn btn-sm" style="background:var(--red);color:#fff;font-size:0.75rem" onclick="quickDelete('${esc(w.name)}')">🗑️</button>
+        </div>
+      </div>
+      ${w.url?`<div style="margin-top:8px"><button class="btn btn-sm" style="background:var(--bg3);color:var(--blue3);font-size:0.75rem;width:100%" onclick="testWorkerConnection(this,'${esc(w.url)}')">⚡ تست سرعت و اتصال</button><div class="test-result" id="test-${w.name.replace(/[^a-zA-Z0-9]/g,'_')}" style="margin-top:8px"></div></div>`:''}
+    `;
+    list.appendChild(div);
+  });
+}
+
+async function quickDelete(name){
+  if(!confirm('⚠️ Worker "'+name+'" حذف شود؟'))return;
+  toast('⏳ در حال حذف...');
+  try{
+    const r=await fetch(BACKEND+'/cf',{method:'POST',headers:{'Authorization':'Bearer '+deployState.token,'Content-Type':'application/json','X-CF-Path':'/accounts/'+deployState.accountId+'/workers/scripts/'+name,'X-CF-Method':'DELETE'}});
+    const d=await r.json();
+    if(d.success){toast('✅ حذف شد!');document.getElementById('workerListCard')?.remove();location.reload();}
+    else toast('❌ خطا: '+(d.errors?.[0]?.message||'حذف ناموفق'));
+  }catch(e){toast('❌ '+e.message)}
+}
+
+async function quickUpdate(name,panelType){
+  const repoCfg=DEPLOY_REPOS[panelType];
+  if(!repoCfg){toast('❌ پنل ناشناخته');return}
+  if(!confirm('🔄 Worker "'+name+'" آپدیت شود?'))return;
+  toast('⏳ در حال آپدیت...');
+  try{
+    const branch=repoCfg.release||'main';
+    const srcUrl='https://raw.githubusercontent.com/'+repoCfg.repo+'/'+branch+'/'+repoCfg.file;
+    const srcR=await fetch(BACKEND+'/github',{method:'POST',headers:{'Content-Type':'application/json','X-GitHub-Url':srcUrl}});
+    const srcData=await srcR.json();
+    if(!srcData.code){toast('❌ کد منبع یافت نشد');return}
+    const wr=await fetch(BACKEND+'/cf',{method:'POST',headers:{'Authorization':'Bearer '+deployState.token,'Content-Type':'application/json','X-CF-Path':'/accounts/'+deployState.accountId+'/workers/scripts/'+name,'X-CF-Method':'PUT','X-CF-Body':srcData.code}});
+    const wd=await wr.json();
+    if(wd.success){toast('✅ آپدیت شد!');location.reload();}
+    else toast('❌ خطا: '+(wd.errors?.[0]?.message||'آپدیت ناموفق'));
+  }catch(e){toast('❌ '+e.message)}
 }
 
 render();

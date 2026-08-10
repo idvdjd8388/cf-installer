@@ -106,7 +106,7 @@ export default {
           amcf:{repo:'amclubs/am-cf-tunnel',file:'_worker.js',bindings:{d1:[],kv:['amclubs']},vars:{UUID:crypto.randomUUID(),PANEL_TYPE:'amcf'},path:'/'},
           vtpanel:{repo:'bayueqi/ZQ-VTPanel',file:'_worker.js',bindings:{d1:[],kv:['VTPanel']},vars:{PANEL_TYPE:'vtpanel'},path:'/'},
           v2ray:{repo:'vfarid/v2ray-worker',file:'worker.js',release:'v2.4',bindings:{d1:[],kv:['settings']},vars:{PANEL_TYPE:'v2ray'},path:'/'},
-          kennedy:{repo:'arshiyashams675-sudo/Kennedy_Proxy',file:'worker.js',release:'main',bindings:{d1:['DB'],kv:['KV']},vars:{ADMIN:'admin',PANEL_TYPE:'kennedy'},path:'/'},
+
         };
         const vtpanelUUID=crypto.randomUUID();
         const p=panels[panelType];

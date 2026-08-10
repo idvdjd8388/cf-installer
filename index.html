@@ -79,13 +79,13 @@ body::after{
 .alert-warn{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.15);color:var(--orange)}
 
 /* ===== SPINNER ===== */
-.spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--text4);border-top-color:var(--blue);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-left:6px}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--text4);border-top-color:var(--blue);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
 @keyframes popIn{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
 @keyframes cardIn{from{opacity:0;transform:translateY(30px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* ===== DEPLOY LOG ===== */
-.deploy-log{background:var(--bg);border:1px solid var(--border2);border-radius:var(--radius);padding:14px;font-family:var(--font-mono);font-size:.67rem;line-height:2.2;color:var(--text4);max-height:180px;overflow-y:auto;margin-top:12px}
+.deploy-log{background:var(--bg);border:1px solid var(--border2);border-radius:var(--radius);padding:14px;font-family:var(--font-mono);font-size:.67rem;line-height:2.2;color:var(--text4);max-height:180px;overflow-y:auto;margin-top:12px;direction:ltr;text-align:left}
 .deploy-log::-webkit-scrollbar{width:3px}
 .deploy-log::-webkit-scrollbar-thumb{background:var(--bg5);border-radius:2px}
 .log-info{color:var(--blue3)}

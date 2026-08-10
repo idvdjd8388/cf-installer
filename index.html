@@ -437,8 +437,7 @@ function render(){
 
 
 
-        <div class="btn-group"><button class="btn btn-secondary btn-sm" id="testBtn" onclick="testConnection()">📊 تست اتصال</button><button class="btn btn-secondary btn-sm" onclick="speedTest()" id="speedBtn">⚡ تست سرعت</button><a id="openPanel" href="#" target="_blank" class="btn btn-primary">باز کردن پنل</a><button class="btn btn-secondary" id="updateBtn">🔄 بروزرسانی</button><button class="btn btn-danger" id="deleteBtn">🗑️ حذف Worker</button><button class="btn btn-secondary" onclick="render()">نصب جدید</button></div>
-        <div class="test-result" id="testResult"></div>
+        <div class="btn-group"><a id="openPanel" href="#" target="_blank" class="btn btn-primary">باز کردن پنل</a><button class="btn btn-secondary" id="updateBtn">🔄 بروزرسانی</button><button class="btn btn-danger" id="deleteBtn">🗑️ حذف Worker</button><button class="btn btn-secondary" onclick="render()">نصب جدید</button></div>
       </div>
     </div>
   `;
@@ -675,7 +674,7 @@ function render(){
     }
     $('deployBtn').disabled=false;$('deployBtn').textContent='🚀 نصب و فعال‌سازی';
   });
-  attachManageButtons();
+  // attachManageButtons(); // moved to worker list
 }
 
 // Show variable inputs for panels that need them
@@ -935,7 +934,7 @@ async function speedTest(){
   el.innerHTML=emoji+' سرعت: '+avg+'ms ('+score+')<br><span class="test-time" style="font-size:12px;opacity:.7">min: '+min+'ms · max: '+max+'ms · '+rounds+' نمونه</span>';
 }
 
-attachManageButtons();
+// attachManageButtons(); // moved to worker list
 </script>
 </body>
 </html>

@@ -557,7 +557,7 @@ function render(){
 
         // Password box - only for panels with admin password
         ['passwdBox'].forEach(id=>{$(id).style.display='none'});
-        if(['nahan','edge','nova'].includes(d.panelType))$('passwdBox').style.display='block';
+        if(['nahan','edge','nova','kennedy'].includes(d.panelType))$('passwdBox').style.display='block';
 
         // Hide all special sections first
         ['uuidBox','edgtunPaths','foxPaths','amcfPaths','vtpanelPaths','v2rayPaths'].forEach(id=>{$(id).style.display='none'});

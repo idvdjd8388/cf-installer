@@ -304,30 +304,43 @@ export default {
         if(!sub){try{const uR=await cfDirect(h,'/user');if(uR&&uR.success&&uR.result&&uR.result.username)sub=uR.result.username;}catch(e){}}
         const scriptsR=await cfDirect(h,`/accounts/${aid}/workers/scripts`);
         if(!scriptsR.success)return R({success:false,error:'خطا در دریافت لیست Workerها'},200,corsHeaders);
+        const PANEL_META={nahan:{icon:'🌙',proto:['VLESS'],desc:'پنل سبک با D1',path:'/sync/dash'},edge:{icon:'⚡',proto:['VLESS','Trojan'],desc:'محبوب‌ترین پنل با KV',path:'/admin'},cfnew:{icon:'🌟',proto:['VLESS'],desc:'پنل مدرن با KV',path:'/'},nova:{icon:'🚀',proto:['VLESS'],desc:'پنل پیشرفته D1+KV',path:'/admin'},edgtun:{icon:'🌍',proto:['VLESS'],desc:'EDtunnel VLESS',path:'/'},fox:{icon:'🦊',proto:['VLESS'],desc:'FoxCloud VLESS',path:'/sub'},amcf:{icon:'🇨🇳',proto:['VLESS','Trojan'],desc:'am-cf-tunnel با KV',path:'/'},vtpanel:{icon:'🛡️',proto:['VLESS','Trojan'],desc:'ZQ-VTPanel با KV',path:'/'},v2ray:{icon:'🐸',proto:['VLESS','Trojan'],desc:'v2ray-worker با KV',path:'/'},worker:{icon:'⚙️',proto:[],desc:'ورکر ناشناخته',path:'/'}};
         const workers=[];
         for(const w of scriptsR.result||[]){
           const name=w.id;
-          let panelType='unknown',panelName='Worker',panelIcon='⚙️';
+          let panelType='unknown',panelName='Worker',panelIcon='⚙️',proto=[],desc='',path='/';
           try{
             const metaR=await cfDirect(h,`/accounts/${aid}/workers/scripts/${name}`);
             if(metaR&&metaR.success&&metaR.result){
               const bindings=metaR.result.bindings||[];
-              const hasDB=bindings.some(b=>b.type==='d1');
-              const hasKV=bindings.some(b=>b.type==='kv_namespace');
-              if(hasDB&&hasKV){panelType='nova';panelName='Nova Proxy';panelIcon='🚀';}
-              else if(hasDB&&!hasKV){panelType='nahan';panelName='Nahan Panel';panelIcon='🌑';}
-              else if(hasKV&&!hasDB){
-                const kvName=bindings.find(b=>b.type==='kv_namespace')?.name||'';
-                if(kvName==='KV'){panelType='edge';panelName='EdgeTunnel';panelIcon='⚡';}
-                else if(kvName==='amclubs'){panelType='amcf';panelName='am-cf-tunnel';panelIcon='🇨🇳';}
-                else if(kvName==='settings'){panelType='v2ray';panelName='v2ray-worker';panelIcon='🐸';}
-                else if(kvName==='C'){panelType='cfnew';panelName='Cfnew Panel';panelIcon='🌟';}
-                else{panelType='vtpanel';panelName='ZQ-VTPanel';panelIcon='🛡️';}
-              }else{panelType='edgtun';panelName='EDtunnel';panelIcon='🌍';}
+              // Priority 1: Check PANEL_TYPE binding (set by CF Installer)
+              const ptBinding=bindings.find(b=>b.type==='secret_text'&&b.name==='PANEL_TYPE');
+              if(ptBinding&&ptBinding.text){
+                panelType=ptBinding.text;
+                const m=PANEL_META[panelType]||PANEL_META.worker;
+                panelIcon=m.icon;panelName=panelType.charAt(0).toUpperCase()+panelType.slice(1);proto=m.proto;desc=m.desc;path=m.path;
+              }else{
+                // Fallback: heuristic from D1/KV bindings
+                const hasDB=bindings.some(b=>b.type==='d1');
+                const hasKV=bindings.some(b=>b.type==='kv_namespace');
+                if(hasDB&&hasKV)panelType='nova';
+                else if(hasDB&&!hasKV)panelType='nahan';
+                else if(hasKV&&!hasDB){
+                  const kvName=bindings.find(b=>b.type==='kv_namespace')?.name||'';
+                  if(kvName==='KV')panelType='edge';
+                  else if(kvName==='amclubs')panelType='amcf';
+                  else if(kvName==='settings')panelType='v2ray';
+                  else if(kvName==='C')panelType='cfnew';
+                  else if(kvName==='VTPanel')panelType='vtpanel';
+                  else panelType='worker';
+                }else panelType='edgtun';
+                const m=PANEL_META[panelType]||PANEL_META.worker;
+                panelIcon=m.icon;panelName=panelType.charAt(0).toUpperCase()+panelType.slice(1);proto=m.proto;desc=m.desc;path=m.path;
+              }
             }
           }catch(e){}
           let workerURL=sub?`https://${name}.${sub}.workers.dev`:'';
-          workers.push({name,panelType,panelName,panelIcon,url:workerURL});
+          workers.push({name,panelType,panelName,panelIcon,url:workerURL,proto,desc,path});
         }
         return R({success:true,workers,subdomain:sub},200,corsHeaders);
       }catch(e){return R({success:false,error:e.message},200,corsHeaders)}

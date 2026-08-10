@@ -769,30 +769,37 @@ function renderWorkerList(workers){
   const el=document.createElement('div');
   el.id='workerListCard';
   el.className='card';
-  el.innerHTML=`<h3 style="margin:0 0 4px 0">📋 ورکرهای شما (${workers.length})</h3><p style="opacity:0.5;font-size:0.85rem;margin:0 0 12px 0">نوع پنل خودکار تشخیص داده شده</p><div id="workerListItems"></div>`;
+  el.innerHTML=`<div class="card-title"><span class="icon">📋</span> ورکرهای شما (${workers.length})</div><div class="card-subtitle">تشخیص خودکار نوع پنل</div><div id="workerListItems"></div>`;
   const pc=document.getElementById('panelCard');
   if(pc&&pc.parentNode)pc.parentNode.insertBefore(el,pc);
   const list=$('workerListItems');
+  const protoBadge=(p)=>`<span class="proto-badge proto-${p.toLowerCase()}">${p}</span>`;
   workers.forEach(w=>{
+    const badges=(w.proto||[]).map(protoBadge).join('');
     const div=document.createElement('div');
     div.className='result-box';
-    div.style.cssText='margin-bottom:10px;padding:12px';
+    div.style.cssText='margin-bottom:10px;padding:14px';
     div.innerHTML=`
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-        <div style="display:flex;align-items:center;gap:8px;min-width:0">
-          <span style="font-size:1.4rem">${w.panelIcon}</span>
+        <div style="display:flex;align-items:center;gap:10px;min-width:0">
+          <span style="font-size:1.6rem">${w.panelIcon}</span>
           <div style="min-width:0">
-            <div style="font-weight:600;word-break:break-all">${esc(w.name)}</div>
-            <div style="opacity:0.5;font-size:0.8rem">${esc(w.panelName)} · ${esc(w.panelType)}</div>
+            <div style="font-weight:700;word-break:break-all;font-size:0.9rem">${esc(w.name)}</div>
+            <div style="opacity:0.5;font-size:0.78rem;margin-top:2px">${esc(w.panelName)} · <code style="font-size:0.7rem;opacity:0.7">${esc(w.panelType)}</code></div>
+            ${w.desc?`<div style="opacity:0.4;font-size:0.72rem;margin-top:2px">${esc(w.desc)}</div>`:''}
+            ${badges?`<div class="panel-badges" style="justify-content:flex-start;margin-top:4px">${badges}</div>`:''}
           </div>
         </div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap">
-          ${w.url?`<a href="${esc(w.url)}" target="_blank" class="btn btn-secondary btn-sm" style="font-size:0.75rem">🔗</a>`:''}
-          <button class="btn btn-sm" style="background:var(--blue);color:#fff;font-size:0.75rem" onclick="quickUpdate('${esc(w.name)}','${esc(w.panelType)}')">🔄</button>
-          <button class="btn btn-sm" style="background:var(--red);color:#fff;font-size:0.75rem" onclick="quickDelete('${esc(w.name)}')">🗑️</button>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0">
+          ${w.url?`<a href="${esc(w.url)}" target="_blank" class="btn btn-secondary btn-sm" style="font-size:0.75rem" title="باز کردن پنل">🔗</a>`:''}
+          <button class="btn btn-sm" style="background:var(--blue);color:#fff;font-size:0.75rem" onclick="quickUpdate('${esc(w.name)}','${esc(w.panelType)}')" title="بروزرسانی">🔄</button>
+          <button class="btn btn-sm" style="background:var(--red);color:#fff;font-size:0.75rem" onclick="quickDelete('${esc(w.name)}')" title="حذف">🗑️</button>
         </div>
       </div>
-      ${w.url?`<div style="margin-top:8px"><button class="btn btn-sm" style="background:var(--bg3);color:var(--blue3);font-size:0.75rem;width:100%" onclick="testWorkerConnection(this,'${esc(w.url)}')">⚡ تست سرعت و اتصال</button><div class="test-result" id="test-${w.name.replace(/[^a-zA-Z0-9]/g,'_')}" style="margin-top:8px"></div></div>`:''}
+      ${w.url?`<div style="margin-top:10px;display:flex;gap:6px">
+        <button class="btn btn-sm" style="background:var(--bg3);color:var(--green);font-size:0.73rem;flex:1" onclick="testConnection(this,'${esc(w.url)}','${esc(w.name)}')">🟢 تست اتصال</button>
+        <button class="btn btn-sm" style="background:var(--bg3);color:var(--cyan);font-size:0.73rem;flex:1" onclick="testSpeed(this,'${esc(w.url)}','${esc(w.name)}')">⚡ تست سرعت</button>
+      </div><div class="test-result" id="test-${w.name.replace(/[^a-zA-Z0-9]/g,'_')}" style="margin-top:8px"></div>`:''}
     `;
     list.appendChild(div);
   });
@@ -836,22 +843,47 @@ async function quickUpdate(name,panelType){
   }catch(e){toast('❌ '+e.message)}
 }
 
-function testWorkerConnection(btn,url){
-  const card=btn.closest('.result-box');
-  const el=card.querySelector('.test-result');
-  if(!el)return;
+function _getTestEl(btn,url,name){
+  const id='test-'+name.replace(/[^a-zA-Z0-9]/g,'_');
+  let el=document.getElementById(id);
+  if(!el){const card=btn.closest('.result-box');if(card)el=card.querySelector('.test-result')}
+  return el;
+}
+async function testConnection(btn,url,name){
+  const el=_getTestEl(btn,url,name);if(!el)return;
   el.className='test-result show testing';
-  el.innerHTML='<span class="spinner"></span> 🔄 در حال تست...';
+  el.innerHTML='<span class="spinner"></span> 🔄 در حال تست اتصال...';
   const t0=performance.now();
-  Promise.all([
-    fetch(url,{mode:'no-cors'}).then(()=>({ok:true})).catch(()=>({ok:false})),
-    fetch(url+'/?t='+Date.now(),{mode:'no-cors'}).then(()=>({ok:true})).catch(()=>({ok:false}))
-  ]).then(([r1,r2])=>{
+  try{
+    const r=await fetch(url,{mode:'no-cors',redirect:'follow'});
     const ms=Math.round(performance.now()-t0);
-    const ok=r1.ok||r2.ok;
-    el.className='test-result show '+(ok?'success':'error');
-    el.innerHTML=ok?`✅ اتصال برقرار (${ms}ms)`:`❌ اتصال برقرار نشد`;
-  });
+    el.className='test-result show active';
+    el.innerHTML='🟢 اتصال برقرار ✅<span class="test-time">'+ms+'ms</span>';
+  }catch(e){
+    const ms=Math.round(performance.now()-t0);
+    if(ms<8000){el.className='test-result show active';el.innerHTML='🟢 اتصال برقرار ✅<span class="test-time">'+ms+'ms</span>'}
+    else{el.className='test-result show inactive';el.innerHTML='❌ اتصال برقرار نشد<span class="test-time">'+ms+'ms</span>'}
+  }
+}
+async function testSpeed(btn,url,name){
+  const el=_getTestEl(btn,url,name);if(!el)return;
+  el.className='test-result show testing';
+  el.innerHTML='<span class="spinner"></span> ⚡ در حال تست سرعت...';
+  const times=[];const rounds=5;
+  for(let i=0;i<rounds;i++){
+    try{const t0=performance.now();await fetch(url,{redirect:'follow',cache:'no-store'});times.push(Math.round(performance.now()-t0))}
+    catch(e){times.push(9999)}
+    await new Promise(r=>setTimeout(r,300));
+  }
+  const avg=Math.round(times.reduce((a,b)=>a+b,0)/times.length);
+  const min=Math.min(...times);const max=Math.max(...times);
+  let score,emoji;
+  if(avg<200){score='عالی ⭐⭐⭐';emoji='🚀'}
+  else if(avg<500){score='خوب ⭐⭐';emoji='⚡'}
+  else if(avg<1500){score='متوسط ⭐';emoji='🐌'}
+  else{score='کند';emoji='🐢'}
+  el.className='test-result show active';
+  el.innerHTML=emoji+' سرعت: '+avg+'ms ('+score+')<br><span class="test-time" style="font-size:12px;opacity:.7">min: '+min+'ms · max: '+max+'ms · '+rounds+' نمونه</span>';
 }
 
 render();

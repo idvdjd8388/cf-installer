@@ -107,7 +107,6 @@ export default {
           vtpanel:{repo:'bayueqi/ZQ-VTPanel',file:'_worker.js',bindings:{d1:[],kv:['VTPanel']},vars:{PANEL_TYPE:'vtpanel'},path:'/'},
           v2ray:{repo:'vfarid/v2ray-worker',file:'worker.js',release:'v2.4',bindings:{d1:[],kv:['settings']},vars:{PANEL_TYPE:'v2ray'},path:'/'},
           kennedy:{repo:'arshiyashams675-sudo/Kennedy_Proxy',file:'worker.js',release:'main',bindings:{d1:['DB'],kv:['KV']},vars:{ADMIN:'admin',PANEL_TYPE:'kennedy'},path:'/'},
-          bpb:{repo:'bia-pain-bache/BPB-Worker-Panel',file:'worker.js',release:'v5.1.1',bindings:{d1:[],kv:['KV']},vars:{},path:''},
         };
         const vtpanelUUID=crypto.randomUUID();
         const p=panels[panelType];
@@ -212,8 +211,8 @@ export default {
             if(subR.success&&subR.result?.subdomain)sub=subR.result.subdomain;
           }catch(e){}
         }
-        if(!sub)return R({success:false,logs,error:'ساب‌دامین شناسایی نشد'},200,corsHeaders);
-        log(`ساب‌دامین: ${sub}`);
+        if(!sub){log('⚠️ ساب‌دامین یافت نشد — تلاش مجدد...');try{const subR2=await cfDirect(h,`/accounts/${aid}/workers/subdomain`);if(subR2.success&&subR2.result?.subdomain)sub=subR2.result.subdomain;}catch(e){}}
+        if(!sub){return R({success:false,logs,error:'ساب‌دامین یافت نشد'},200,corsHeaders);}
         const basePath=`https://${workerName}.${sub}.workers.dev`;
         const panelPath=p.path||(vars.u?`/${vars.u}`:'');
         const panelURL=basePath+panelPath;

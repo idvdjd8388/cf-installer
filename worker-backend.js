@@ -289,6 +289,50 @@ export default {
       }catch(e){return R({success:false},200,corsHeaders)}
     }
 
+    // List all workers
+    if(url.pathname==='/list-workers' && request.method==='POST'){
+      try{
+        const body=await request.json();
+        const {token}=body;
+        if(!token||!token.startsWith('cfut_'))return R({success:false,error:'توکن نامعتبر'},200,corsHeaders);
+        const h={'Authorization':'Bearer '+token};
+        const ar=await cfDirect(h,'/accounts');
+        if(!ar.success||!ar.result.length)return R({success:false,error:'حسابی یافت نشد'},200,corsHeaders);
+        const aid=ar.result[0].id;
+        let sub='';
+        try{const sR=await cfDirect(h,`/accounts/${aid}/workers/subdomain`);if(sR&&sR.success&&sR.result&&sR.result.subdomain)sub=sR.result.subdomain;}catch(e){}
+        if(!sub){try{const uR=await cfDirect(h,'/user');if(uR&&uR.success&&uR.result&&uR.result.username)sub=uR.result.username;}catch(e){}}
+        const scriptsR=await cfDirect(h,`/accounts/${aid}/workers/scripts`);
+        if(!scriptsR.success)return R({success:false,error:'خطا در دریافت لیست Workerها'},200,corsHeaders);
+        const workers=[];
+        for(const w of scriptsR.result||[]){
+          const name=w.id;
+          let panelType='unknown',panelName='Worker',panelIcon='⚙️';
+          try{
+            const metaR=await cfDirect(h,`/accounts/${aid}/workers/scripts/${name}`);
+            if(metaR&&metaR.success&&metaR.result){
+              const bindings=metaR.result.bindings||[];
+              const hasDB=bindings.some(b=>b.type==='d1');
+              const hasKV=bindings.some(b=>b.type==='kv_namespace');
+              if(hasDB&&hasKV){panelType='nova';panelName='Nova Proxy';panelIcon='🚀';}
+              else if(hasDB&&!hasKV){panelType='nahan';panelName='Nahan Panel';panelIcon='🌑';}
+              else if(hasKV&&!hasDB){
+                const kvName=bindings.find(b=>b.type==='kv_namespace')?.name||'';
+                if(kvName==='KV'){panelType='edge';panelName='EdgeTunnel';panelIcon='⚡';}
+                else if(kvName==='amclubs'){panelType='amcf';panelName='am-cf-tunnel';panelIcon='🇨🇳';}
+                else if(kvName==='settings'){panelType='v2ray';panelName='v2ray-worker';panelIcon='🐸';}
+                else if(kvName==='C'){panelType='cfnew';panelName='Cfnew Panel';panelIcon='🌟';}
+                else{panelType='vtpanel';panelName='ZQ-VTPanel';panelIcon='🛡️';}
+              }else{panelType='edgtun';panelName='EDtunnel';panelIcon='🌍';}
+            }
+          }catch(e){}
+          let workerURL=sub?`https://${name}.${sub}.workers.dev`:'';
+          workers.push({name,panelType,panelName,panelIcon,url:workerURL});
+        }
+        return R({success:true,workers,subdomain:sub},200,corsHeaders);
+      }catch(e){return R({success:false,error:e.message},200,corsHeaders)}
+    }
+
     return R({error:'Not found',path:url.pathname},404,corsHeaders);
   }
 };

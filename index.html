@@ -86,8 +86,6 @@ body::after{
 
 /* ===== DEPLOY LOG ===== */
 .deploy-log{background:var(--bg);border:1px solid var(--border2);border-radius:var(--radius);padding:14px;font-family:var(--font-mono);font-size:.67rem;line-height:2.2;color:var(--text4);max-height:180px;overflow-y:auto;margin-top:12px;direction:ltr;text-align:left}
-.deploy-log::-webkit-scrollbar{width:3px}
-.deploy-log::-webkit-scrollbar-thumb{background:var(--bg5);border-radius:2px}
 .log-info{color:var(--blue3)}
 .log-ok{color:var(--green)}
 .log-err{color:var(--red)}
@@ -137,10 +135,6 @@ body::after{
 .star-icon{color:var(--yellow);font-size:.75rem}
 
 /* ===== ANIMATIONS ===== */
-@keyframes fadeUp{
-  from{opacity:0;transform:translateY(20px)}
-  to{opacity:1;transform:translateY(0)}
-}
 @keyframes fadeIn{
   from{opacity:0}
   to{opacity:1}
@@ -316,6 +310,7 @@ const PANELS={
   edge:{name:'EdgeTunnel',icon:'⚡',desc:'پنل حرفه‌ای و محبوب با KV',key:'edge',proto:['VLESS','Trojan'],tip:'محبوب‌ترین پنل — 41k+ ستاره — پشتیبانی KV'},
   cfnew:{name:'Cfnew Panel',icon:'🆕',desc:'پنل مدرن با KV',key:'cfnew',proto:['VLESS'],tip:'پنل مدرن با UUID خودکار — KV Storage'},
   nova:{name:'Nova Proxy',icon:'🚀',desc:'پنل پیشرفته D1 + KV',key:'nova',proto:['VLESS'],tip:'پنل پیشرفته با D1 + KV — مدیریت کاربران'},
+  kennedy:{name:'Kennedy Proxy',icon:'🎯',desc:'پنل Kennedy — مبتنی بر Nova + D1 + KV',key:'kennedy',proto:['VLESS','Trojan'],tip:'Kennedy Proxy — مدیریت اشتراک، WARP، DNS، رادار IP'},
   edgtun:{name:'EDtunnel',icon:'🌐',desc:'محبوب‌ترین VLESS/Trojan — 2.9k ⭐',key:'edgtun',proto:['VLESS'],tip:'VLESS مستقیم — بدون نیاز به دیتابیس — UUID خودکار'},
   fox:{name:'FoxCloud',icon:'🦊',desc:'VLESS سبک و سریع — 151 ⭐',key:'fox',proto:['VLESS'],tip:'VLESS سبک و سریع — صفحه اشتراک — UUID خودکار'},
   amcf:{name:'am-cf-tunnel',icon:'🇨🇳',desc:'VLESS + Trojan با Subscription — 3.1k ⭐',key:'amcf',proto:['VLESS','Trojan','DOMAIN'],tip:'VLESS + Trojan — Subscription — KV Storage — نیاز به دامنه'},
@@ -330,6 +325,7 @@ const PANELS_CONFIG={
   edge:{repo:'everydayworker/worker-pool',file:'workers/EdgeTunnel/index.js',kv:['EdgeTunnel'],vars:{},path:'/'},
   cfnew:{repo:'zhangkaiitugithub/workerspool',file:'pool/cfUrl/index.js',vars:{},path:'/'},
   nova:{repo:'AresS31/Nova-Proxy',file:'worker.js',kv:['Nova'],vars:{},path:'/'},
+  kennedy:{repo:'arshiyashams675-sudo/Kennedy_Proxy',file:'worker.js',kv:['Kennedy'],vars:{},path:'/'},
   edgtun:{repo:'xizekpan/EDtunnel-Go-Workers',file:'index.js',kv:['EDtunnel'],vars:{},path:'/'},
   fox:{repo:'likennn/worker-falcons',file:'falcons/fox/index.js',vars:{},path:'/'},
   amcf:{repo:'am883478014/cf-proxy',file:'cf-proxy/_worker.js',vars:{},path:'/'},
@@ -340,7 +336,7 @@ const PANELS_CONFIG={
 };
 
 const PANEL_STARS={
-  nahan:3082,edge:41735,cfnew:14694,nova:3207,edgtun:2989,
+  nahan:3082,edge:41735,cfnew:14694,nova:3207,kennedy:0,edgtun:2989,
   fox:151,amcf:3126,vtpanel:62,v2ray:195
 };
 
@@ -353,6 +349,7 @@ const DEPLOY_REPOS={
   edge:{repo:'cmliu/edgetunnel',file:'_worker.js'},
   cfnew:{repo:'byjoey/cfnew',file:'\u660e\u6587\u6e90\u5417'},
   nova:{repo:'IRNova/Nova-Proxy',file:'worker.js'},
+  kennedy:{repo:'arshiyashams675-sudo/Kennedy_Proxy',file:'worker.js'},
   edgtun:{repo:'6Kmfi6HP/EDtunnel',file:'_worker.js'},
   fox:{repo:'code3-dev/foxcloud',file:'worker.js',release:'v1.0.0'},
   amcf:{repo:'amclubs/am-cf-tunnel',file:'_worker.js'},

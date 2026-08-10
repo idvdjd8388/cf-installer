@@ -206,12 +206,19 @@ export default {
 
         // Re-fetch subdomain after enable (may have changed)
         if(!sub){
+          log('انتظار برای آماده شدن ساب‌دامین...');
+          await new Promise(r=>setTimeout(r,3000));
           try{
             const subR=await cfDirect(h,`/accounts/${aid}/workers/subdomain`);
+            log(`subdomain API: success=${subR.success} sub=${subR.result?.subdomain||'none'}`);
             if(subR.success&&subR.result?.subdomain)sub=subR.result.subdomain;
-          }catch(e){}
+          }catch(e){log(`subdomain fetch error: ${e.message}`)}
         }
-        if(!sub){log('⚠️ ساب‌دامین یافت نشد — تلاش مجدد...');try{const subR2=await cfDirect(h,`/accounts/${aid}/workers/subdomain`);if(subR2.success&&subR2.result?.subdomain)sub=subR2.result.subdomain;}catch(e){}}
+        if(!sub){
+          log('تلاش مجدد ساب‌دامین...');
+          await new Promise(r=>setTimeout(r,2000));
+          try{const subR2=await cfDirect(h,`/accounts/${aid}/workers/subdomain`);if(subR2.success&&subR2.result?.subdomain)sub=subR2.result.subdomain;}catch(e){}
+        }
         if(!sub){log('⚠️ ساب‌دامین شناسایی نشد');return R({success:false,logs,error:'ساب‌دامین شناسایی نشد — Worker مستقر شد ولی ساب‌دامین قابل شناسایی نیست. از داشبورد CF استفاده کنید.',workerName,dashboardURL:`https://dash.cloudflare.com/${aid}/workers-and-pages`},200,corsHeaders);}
         const basePath=`https://${workerName}.${sub}.workers.dev`;
         const panelPath=p.path||(vars.u?`/${vars.u}`:'');

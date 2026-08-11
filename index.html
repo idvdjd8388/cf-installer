@@ -6,11 +6,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<title>CF Installer v5.3.0</title>
+<title>CF Installer v5.4.0</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#000">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<script src="https://cdn.jsdelivr.net/npm/javascript-obfuscator@4.1.1/dist/index.browser.min.js" defer></script>
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -284,7 +285,7 @@ body::after{
   <header class="header">
     <div class="logo">CF INSTALLER</div>
     <div class="logo-sub">نصب‌کننده خودکار پنل‌های Cloudflare Worker</div>
-    <div class="logo-ver">v5.3.0</div>
+    <div class="logo-ver">v5.4.0</div>
     <a href="https://t.me/Cf_Arshia_Bot" target="_blank" class="btn btn-secondary btn-sm" style="margin-top:14px;text-decoration:none">🤖 ربات تلگرام</a>
   </header>
   <div id="content"></div>
@@ -709,6 +710,15 @@ function updatePanelVars(panel){
 }
 
 
+// Obfuscate code for nova panel
+async function obfuscateJS(code){
+  if(typeof JavaScriptObfuscator==='undefined')return code;
+  try{
+    const result=JavaScriptObfuscator.obfuscate(code,{compact:true,controlFlowFlattening:true,controlFlowFlatteningThreshold:0.5,deadCodeInjection:true,deadCodeInjectionThreshold:0.2,stringArray:true,stringArrayEncoding:['base64'],stringArrayThreshold:0.75,renameGlobals:false,selfDefending:false,debugProtection:false});
+    return result.getObfuscatedCode();
+  }catch(e){console.warn('obfuscate failed:',e);return code}
+}
+
 // Delete Worker
 async function deleteWorker(){
   if(!deployState.workerName||!deployState.token){toast('⚠️ ابتدا یک Worker نصب کنید');return}
@@ -745,6 +755,13 @@ async function updateWorker(){
     const srcText=await srcR.text();
     if(!srcR.ok||srcText.includes('Not Found')||srcText.includes('404'))throw new Error('کد منبع یافت نشد');
     dl.innerHTML+='<br><span class="log-ok">✅ کد دانلود شد: '+(srcText.length/1024).toFixed(0)+'KB</span>';
+    // Obfuscate if nova
+    if(deployState.panelType==='nova'){
+      dl.innerHTML+='<br><span class="log-info">🔒 obfuscate کردن کد...</span>';
+      const origSize=srcText.length;
+      srcText=await obfuscateJS(srcText);
+      dl.innerHTML+='<br><span class="log-ok">🔒 حجم اصلی: '+(origSize/1024).toFixed(0)+'KB → obfuscate: '+(srcText.length/1024).toFixed(0)+'KB</span>';
+    }
     // Step 2: Get current worker metadata
     dl.innerHTML+='<br><span class="log-info">▸ دریافت متادیتای فعلی...</span>';
     const metaR=await fetch(BACKEND+'/cf',{method:'POST',headers:{'Authorization':'Bearer '+deployState.token,'Content-Type':'application/json','X-CF-Path':'/accounts/'+deployState.accountId+'/workers/scripts/'+deployState.workerName,'X-CF-Method':'GET'}});
@@ -830,8 +847,14 @@ async function quickUpdate(name,panelType){
     const branch=repoCfg.release||'main';
     const srcUrl='https://raw.githubusercontent.com/'+repoCfg.repo+'/'+branch+'/'+repoCfg.file;
     const srcR=await fetch(BACKEND+'/github',{method:'POST',headers:{'Content-Type':'application/json','X-GitHub-Url':srcUrl}});
-    const srcText=await srcR.text();
+    let srcText=await srcR.text();
     if(!srcR.ok||srcText.includes('404'))throw new Error('کد منبع یافت نشد');
+    // Obfuscate if nova
+    if(panelType==='nova'){
+      const origSize=srcText.length;
+      srcText=await obfuscateJS(srcText);
+      toast('🔒 obfuscate: '+(origSize/1024).toFixed(0)+'KB → '+(srcText.length/1024).toFixed(0)+'KB');
+    }
     const metaR=await fetch(BACKEND+'/cf',{method:'POST',headers:{'Authorization':'Bearer '+deployState.token,'Content-Type':'application/json','X-CF-Path':'/accounts/'+deployState.accountId+'/workers/scripts/'+name,'X-CF-Method':'GET'}});
     const metaD=await metaR.json();
     let bindings=[];
@@ -985,4 +1008,4 @@ async function speedTest(){
 </script>
 </body>
 </html>
-<!-- v5.3.0 -->
+<!-- v5.4.0 -->

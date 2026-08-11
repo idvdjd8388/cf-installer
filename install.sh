@@ -10,7 +10,7 @@ BACKEND="https://cf-installer-backend.cf-installer.workers.dev"
 
 clear 2>/dev/null || true
 echo -e "${C}╔══════════════════════════════════╗${NC}"
-echo -e "${C}║    🔥 CF Installer v4.7.0       ║${NC}"
+echo -e "${C}║    🔥 CF Installer v5.4.2       ║${NC}"
 echo -e "${C}║  Install VPN panels on Workers  ║${NC}"
 echo -e "${C}╚══════════════════════════════════╝${NC}"
 
@@ -39,7 +39,7 @@ fi
 echo -e "${C}▶ Validating account...${NC}"
 V=$(curl -s -X POST "$BACKEND/deploy" \
     -H "Content-Type: application/json" \
-    -H "Origin: https://arshiyashams675-sudo.github.io" \
+    -H "Origin: https://idvdjd8388.github.io" \
     -d "{\"token\":\"$TOKEN\",\"panelType\":\"validate\"}")
 
 if ! echo "$V" | grep -q '"success":true'; then
@@ -53,7 +53,7 @@ echo -e "${G}✅ Account: ${AN}${NC}"
 echo -e "${C}▶ Getting subdomain...${NC}"
 S=$(curl -s -X POST "$BACKEND/get-subdomain" \
     -H "Content-Type: application/json" \
-    -H "Origin: https://arshiyashams675-sudo.github.io" \
+    -H "Origin: https://idvdjd8388.github.io" \
     -d "{\"token\":\"$TOKEN\"}")
 
 SD=$(echo "$S" | grep -o '"subdomain":"[^"]*"' | cut -d'"' -f4)
@@ -82,7 +82,7 @@ echo ""
 echo -e "${W}🚀 Deploying ${P}...${NC}"
 D=$(curl -s -X POST "$BACKEND/deploy" \
     -H "Content-Type: application/json" \
-    -H "Origin: https://arshiyashams675-sudo.github.io" \
+    -H "Origin: https://idvdjd8388.github.io" \
     -d "{\"token\":\"$TOKEN\",\"panelType\":\"$P\"}")
 
 if echo "$D" | grep -q '"success":true'; then

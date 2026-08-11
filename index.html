@@ -6,7 +6,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<title>CF Installer v5.2.0</title>
+<title>CF Installer v5.3.0</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#000">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -69,7 +69,7 @@ body::after{
 .btn-secondary:hover{background:var(--bg3);border-color:var(--border3)}
 
 .btn-sm{height:38px;padding:0 16px;font-size:.76rem;border-radius:8px}
-.btn-group{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.btn-group{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:14px}.btn-group .btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 12px;font-size:.8rem;border-radius:var(--radius);text-align:center;text-decoration:none;gap:6px}@media(min-width:480px){.btn-group{grid-template-columns:repeat(3,1fr)}}@media(min-width:768px){.btn-group{grid-template-columns:repeat(5,1fr)}}
 
 /* ===== ALERTS ===== */
 .alert{padding:12px 16px;border-radius:var(--radius);font-size:.8rem;font-weight:600;margin-top:12px}
@@ -149,8 +149,7 @@ body::after{
   .card{padding:24px;border-radius:16px}
   .panel-grid{grid-template-columns:1fr;gap:12px}
   .panel-card{padding:18px 14px}
-  .btn-group{flex-direction:column}
-  .btn-group .btn{width:100%}
+  .btn-group{grid-template-columns:repeat(2,1fr)}.btn-group .btn{width:100%}
   .result-value{flex-direction:column;align-items:flex-start;gap:8px}
   .copy-btn{align-self:flex-end}
   .footer-stars{gap:6px 10px}
@@ -285,7 +284,7 @@ body::after{
   <header class="header">
     <div class="logo">CF INSTALLER</div>
     <div class="logo-sub">نصب‌کننده خودکار پنل‌های Cloudflare Worker</div>
-    <div class="logo-ver">v5.2.0</div>
+    <div class="logo-ver">v5.3.0</div>
     <a href="https://t.me/Cf_Arshia_Bot" target="_blank" class="btn btn-secondary btn-sm" style="margin-top:14px;text-decoration:none">🤖 ربات تلگرام</a>
   </header>
   <div id="content"></div>
@@ -437,7 +436,14 @@ function render(){
 
 
 
-        <div class="btn-group"><a id="openPanel" href="#" target="_blank" class="btn btn-primary">باز کردن پنل</a><button class="btn btn-danger" id="deleteBtn">🗑️ حذف Worker</button><button class="btn btn-secondary" onclick="render()">نصب جدید</button></div>
+        <div class="btn-group" id="resultBtns">
+          <a id="openPanel" href="#" target="_blank" class="btn btn-primary" style="border:1px solid var(--blue);background:rgba(0,120,214,.1);color:var(--blue)">🔗 باز کردن پنل</a>
+          <button class="btn" id="testConnBtn" style="border:1px solid var(--green);background:rgba(34,197,94,.08);color:var(--green)">🟢 تست اتصال</button>
+          <a id="dashLink" href="https://dash.cloudflare.com" target="_blank" class="btn" style="border:1px solid var(--border2);color:var(--text2);text-decoration:none">📋 داشبورد CF</a>
+          <button class="btn" id="deleteBtn" style="border:1px solid rgba(239,68,68,.3);background:rgba(239,68,68,.06);color:var(--red)">🗑️ حذف Worker</button>
+          <button class="btn" id="newInstallBtn" style="border:1px solid var(--border2);color:var(--text2)">➕ نصب جدید</button>
+        </div>
+        <div class="test-result" id="deployTestResult" style="margin-top:10px"></div>
       </div>
     </div>
   `;
@@ -556,11 +562,16 @@ function render(){
         // Also update openPanel when input changes
         $('resUrlInput').addEventListener('input',function(){$('openPanel').href=this.value})
         $('resultBox').style.display='block';
-        // Dashboard link
-        if(d.dashboardURL){
-          var old=document.getElementById('dashLink');if(old)old.remove();
-          $('openPanel').insertAdjacentHTML('afterend','<a id="dashLink" href="'+esc(d.dashboardURL)+'" target="_blank" class="btn btn-secondary btn-sm" style="text-decoration:none">📋 داشبورد CF</a>');
-        }
+        // Attach deploy result button listeners
+        $('deleteBtn').onclick=async function(){
+          if(!confirm('⚠️ Worker "'+d.workerName+'" حذف شود؟'))return;
+          this.disabled=true;this.textContent='⏳ در حال حذف...';
+          try{const r=await fetch(BACKEND+'/cf',{method:'POST',headers:{'Authorization':'Bearer '+deployState.token,'Content-Type':'application/json','X-CF-Path':'/accounts/'+deployState.accountId+'/workers/scripts/'+d.workerName,'X-CF-Method':'DELETE'}});const j=await r.json();
+          if(j.success){toast('✅ حذف شد!');location.reload()}else{toast('❌ خطا');this.disabled=false;this.textContent='🗑️ حذف Worker'}}catch(e){toast('❌ '+e.message);this.disabled=false;this.textContent='🗑️ حذف Worker'}};
+        $('newInstallBtn').onclick=function(){render()};
+        $('testConnBtn').onclick=function(){testConnection(this,d.panelURL||$('resUrlInput').value,d.workerName,'deployTestResult')};
+        // Update dashboard link
+        if(d.dashboardURL)$('dashLink').href=d.dashboardURL;
 
         // Password box - only for panels with admin password
         ['passwdBox'].forEach(id=>{$(id).style.display='none'});
@@ -974,4 +985,4 @@ async function speedTest(){
 </script>
 </body>
 </html>
-<!-- v5.2.0 -->
+<!-- v5.3.0 -->

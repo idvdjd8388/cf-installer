@@ -6,7 +6,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<title>CF Installer v5.4.1</title>
+<title>CF Installer v5.4.2</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#000">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -285,7 +285,7 @@ body::after{
   <header class="header">
     <div class="logo">CF INSTALLER</div>
     <div class="logo-sub">نصب‌کننده خودکار پنل‌های Cloudflare Worker</div>
-    <div class="logo-ver">v5.4.1</div>
+    <div class="logo-ver">v5.4.2</div>
     <a href="https://t.me/Cf_Arshia_Bot" target="_blank" class="btn btn-secondary btn-sm" style="margin-top:14px;text-decoration:none">🤖 ربات تلگرام</a>
   </header>
   <div id="content"></div>
@@ -491,7 +491,6 @@ function render(){
           const subData=await subRes.json();
           if(subData.success&&subData.subdomain){
             deployState.subdomain=subData.subdomain;
-            localStorage.setItem('cf_subdomain',subData.subdomain);
           }
         }catch(e){}
         // Fetch worker list
@@ -909,24 +908,6 @@ async function testConnection(btn,url,name,tid){
 render();
 renderFooter();
 if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
-// Auto-load worker list from saved token
-(function(){
-  const saved=localStorage.getItem('cf_token');
-  if(saved&&saved.startsWith('cfut_')){
-    deployState.token=saved;$('tokenIn').value=saved;
-    fetch(BACKEND+'/deploy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:saved,panelType:'validate'})})
-    .then(r=>r.json()).then(d=>{
-      if(d.success){
-        $('tokenResult').innerHTML='<div class="alert alert-success" style="margin-top:12px">✅ توکن ذخیره شده!</div>';
-        $('panelCard').style.display='block';
-        if(d.accountId)deployState.accountId=d.accountId;
-        return fetch(BACKEND+'/list-workers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:saved})});
-      }
-    }).then(r=>r?r.json():null).then(d=>{
-      if(d&&d.success&&d.workers&&d.workers.length)renderWorkerList(d.workers);
-    }).catch(()=>{});
-  }
-})();
 // Theme toggle event
 $('themeToggle').addEventListener('click',toggleTheme);
 // Delete/Update event listeners (re-attach on each render)
@@ -1008,4 +989,4 @@ async function speedTest(){
 </script>
 </body>
 </html>
-<!-- v5.4.1 -->
+<!-- v5.4.2 -->

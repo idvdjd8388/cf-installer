@@ -790,10 +790,10 @@ function renderWorkerList(workers){
             ${badges?`<div class="panel-badges" style="justify-content:flex-start;margin-top:4px">${badges}</div>`:''}
           </div>
         </div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0">
-          ${w.url?`<a href="${esc(w.url)}" target="_blank" class="btn btn-secondary btn-sm" style="font-size:0.75rem" title="باز کردن پنل">🔗</a>`:''}
-          <button class="btn btn-sm" style="background:var(--blue);color:#fff;font-size:0.75rem" onclick="quickUpdate('${esc(w.name)}','${esc(w.panelType)}')" title="بروزرسانی">🔄</button>
-          <button class="btn btn-sm" style="background:var(--red);color:#fff;font-size:0.75rem" onclick="quickDelete('${esc(w.name)}')" title="حذف">🗑️</button>
+        <div style="display:flex;gap:8px;flex-shrink:0">
+          ${w.url?`<a href="${esc(w.url)}" target="_blank" class="btn btn-secondary btn-sm" style="font-size:0.75rem;padding:0 12px" title="باز کردن پنل">🔗</a>`:''}
+          <button class="btn btn-sm" style="background:var(--blue);color:#fff;font-size:0.75rem;padding:0 12px" onclick="quickUpdate('${esc(w.name)}','${esc(w.panelType)}')" title="بروزرسانی">🔄</button>
+          <button class="btn btn-sm" style="background:var(--red);color:#fff;font-size:0.75rem;padding:0 12px" onclick="quickDelete('${esc(w.name)}')" title="حذف">🗑️</button>
         </div>
       </div>
       ${w.url?`<div style="margin-top:10px;display:flex;gap:6px">

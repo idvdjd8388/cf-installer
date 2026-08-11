@@ -197,7 +197,7 @@ export default {
         if(Object.keys(vars).length){
           for(const [k,v] of Object.entries(vars)){
             log(`تنظیم متغیر: ${k}...`);
-            bindingsWithVars.push({name:k,type:'secret_text',text:v});
+            bindingsWithVars.push({name:k,type:'plain_text',text:v});
           }
         }
         const md={main_module:'worker.js',compatibility_date:'2024-09-22',compatibility_flags:['nodejs_compat'],bindings:bindingsWithVars};
@@ -314,7 +314,7 @@ export default {
             if(metaR&&metaR.success&&metaR.result){
               const bindings=metaR.result.bindings||[];
               // Priority 1: Check PANEL_TYPE binding (set by CF Installer)
-              const ptBinding=bindings.find(b=>b.type==='secret_text'&&b.name==='PANEL_TYPE');
+              const ptBinding=bindings.find(b=>(b.type==='plain_text'||b.type==='secret_text')&&b.name==='PANEL_TYPE');
               if(ptBinding&&ptBinding.text){
                 panelType=ptBinding.text;
                 const m=PANEL_META[panelType]||PANEL_META.worker;

@@ -6,7 +6,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<title>CF Installer v5.1.4</title>
+<title>CF Installer v5.1.5</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#000">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -285,7 +285,7 @@ body::after{
   <header class="header">
     <div class="logo">CF INSTALLER</div>
     <div class="logo-sub">نصب‌کننده خودکار پنل‌های Cloudflare Worker</div>
-    <div class="logo-ver">v5.1.4</div>
+    <div class="logo-ver">v5.1.5</div>
     <a href="https://t.me/Cf_Arshia_Bot" target="_blank" class="btn btn-secondary btn-sm" style="margin-top:14px;text-decoration:none">🤖 ربات تلگرام</a>
   </header>
   <div id="content"></div>
@@ -363,7 +363,7 @@ function toggleTheme(){const c=document.documentElement.getAttribute('data-theme
 const $=id=>document.getElementById(id);
 applyTheme(localStorage.getItem('cf-installer-theme')||'dark');
 function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
-function esc(s){return s?String(s).replace(/[&<>\"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[m])):''}
+function esc(s){return s?String(s).replace(/[&<>"'\/]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','/':'&#x2F;'}[m])):''}
 function cpB(b,t){navigator.clipboard.writeText(t).then(()=>{const o=b.textContent;b.textContent='کپی شد!';b.classList.add('copied');setTimeout(()=>{b.textContent=o;b.classList.remove('copied')},1500)})}
 function setProgress(pct,label){$('progressFill').style.width=pct+'%';$('progressPct').textContent=pct+'%';if(label)$('progressLabel').textContent=label}
 
@@ -477,7 +477,7 @@ function render(){
         $('tokenResult').innerHTML='<div class="alert alert-success" style="margin-top:12px">✅ توکن معتبر است!</div>';
         $('panelCard').style.display='block';
         toast('✅ توکن معتبر!');
-        if(d.accountId)deployState.accountId=d.accountId;
+        if(d.accountId)deployState.accountId=d.accountId;deployState.token=token;localStorage.setItem('cf_token',token);
         // Get subdomain from user email
         try{
           const subRes=await fetch(BACKEND+'/get-subdomain',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token})});
@@ -774,34 +774,41 @@ function renderWorkerList(workers){
   if(pc&&pc.parentNode)pc.parentNode.insertBefore(el,pc);
   const list=$('workerListItems');
   const protoBadge=(p)=>`<span class="proto-badge proto-${p.toLowerCase()}">${p}</span>`;
-  workers.forEach(w=>{
+  workers.forEach((w,idx)=>{
     const badges=(w.proto||[]).map(protoBadge).join('');
     const div=document.createElement('div');
     div.className='result-box';
     div.style.cssText='margin-bottom:10px;padding:14px';
+    const safeName=esc(w.name);const safeType=esc(w.panelType);const safeUrl=esc(w.url||'');
+    const tid='test-'+w.name.replace(/[^a-zA-Z0-9]/g,'_')+'-'+idx;
     div.innerHTML=`
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
         <div style="display:flex;align-items:center;gap:10px;min-width:0">
-          <span style="font-size:1.6rem">${w.panelIcon}</span>
+          <span style="font-size:1.6rem">${w.panelIcon||'📦'}</span>
           <div style="min-width:0">
-            <div style="font-weight:700;word-break:break-all;font-size:0.9rem">${esc(w.name)}</div>
-            <div style="opacity:0.5;font-size:0.78rem;margin-top:2px">${esc(w.panelName)} · <code style="font-size:0.7rem;opacity:0.7">${esc(w.panelType)}</code></div>
+            <div style="font-weight:700;word-break:break-all;font-size:0.9rem">${safeName}</div>
+            <div style="opacity:0.5;font-size:0.78rem;margin-top:2px">${esc(w.panelName)} · <code style="font-size:0.7rem;opacity:0.7">${safeType}</code></div>
             ${w.desc?`<div style="opacity:0.4;font-size:0.72rem;margin-top:2px">${esc(w.desc)}</div>`:''}
             ${badges?`<div class="panel-badges" style="justify-content:flex-start;margin-top:4px">${badges}</div>`:''}
           </div>
         </div>
         <div style="display:flex;gap:8px;flex-shrink:0">
-          ${w.url?`<a href="${esc(w.url)}" target="_blank" class="btn btn-secondary btn-sm" style="font-size:0.75rem;padding:0 12px" title="باز کردن پنل">🔗</a>`:''}
-          <button class="btn btn-sm" style="background:var(--blue);color:#fff;font-size:0.75rem;padding:0 12px" onclick="quickUpdate('${esc(w.name)}','${esc(w.panelType)}')" title="بروزرسانی">🔄</button>
-          <button class="btn btn-sm" style="background:var(--red);color:#fff;font-size:0.75rem;padding:0 12px" onclick="quickDelete('${esc(w.name)}')" title="حذف">🗑️</button>
+          ${w.url?`<a href="${safeUrl}" target="_blank" class="btn btn-secondary btn-sm" style="font-size:0.75rem;padding:0 12px" title="باز کردن پنل">🔗</a>`:''}
+          <button class="btn btn-sm wu-btn" style="background:var(--blue);color:#fff;font-size:0.75rem;padding:0 12px" title="بروزرسانی" data-name="${safeName}" data-type="${safeType}">🔄</button>
+          <button class="btn btn-sm wd-btn" style="background:var(--red);color:#fff;font-size:0.75rem;padding:0 12px" title="حذف" data-name="${safeName}">🗑️</button>
         </div>
       </div>
       ${w.url?`<div style="margin-top:10px;display:flex;gap:6px">
-        <button class="btn btn-sm" style="background:var(--bg3);color:var(--green);font-size:0.73rem;flex:1" onclick="testConnection(this,'${esc(w.url)}','${esc(w.name)}')">🟢 تست اتصال</button>
-        <button class="btn btn-sm" style="background:var(--bg3);color:var(--cyan);font-size:0.73rem;flex:1" onclick="testSpeed(this,'${esc(w.url)}','${esc(w.name)}')">⚡ تست سرعت</button>
-      </div><div class="test-result" id="test-${w.name.replace(/[^a-zA-Z0-9]/g,'_')}" style="margin-top:8px"></div>`:''}
+        <button class="btn btn-sm tc-btn" style="background:var(--bg3);color:var(--green);font-size:0.73rem;flex:1" data-url="${safeUrl}" data-name="${safeName}" data-tid="${tid}">🟢 تست اتصال</button>
+        <button class="btn btn-sm ts-btn" style="background:var(--bg3);color:var(--cyan);font-size:0.73rem;flex:1" data-url="${safeUrl}" data-name="${safeName}" data-tid="${tid}">⚡ تست سرعت</button>
+      </div><div class="test-result" id="${tid}" style="margin-top:8px"></div>`:''}
     `;
     list.appendChild(div);
+    // Attach event listeners safely (no inline onclick)
+    div.querySelector('.wu-btn')?.addEventListener('click',function(){quickUpdate(this.dataset.name,this.dataset.type)});
+    div.querySelector('.wd-btn')?.addEventListener('click',function(){quickDelete(this.dataset.name)});
+    div.querySelector('.tc-btn')?.addEventListener('click',function(){testConnection(this,this.dataset.url,this.dataset.name,this.dataset.tid)});
+    div.querySelector('.ts-btn')?.addEventListener('click',function(){testSpeed(this,this.dataset.url,this.dataset.name,this.dataset.tid)});
   });
 }
 
@@ -839,41 +846,55 @@ async function quickUpdate(name,panelType){
     const putD=await putR.json();
     if(!putD.success)throw new Error('خطا در آپدیت');
     toast('✅ آپدیت کامل شد!');
-    document.getElementById('workerListCard')?.remove();location.reload();
+    document.querySelectorAll('.wd-btn,.wu-btn,.tc-btn,.ts-btn').forEach(b=>b.disabled=true);
+    setTimeout(()=>location.reload(),500);
   }catch(e){toast('❌ '+e.message)}
 }
 
-function _getTestEl(btn,url,name){
-  const id='test-'+name.replace(/[^a-zA-Z0-9]/g,'_');
-  let el=document.getElementById(id);
+function _getTestEl(btn,url,name,tid){
+  let el=tid?document.getElementById(tid):null;
   if(!el){const card=btn.closest('.result-box');if(card)el=card.querySelector('.test-result')}
   return el;
 }
-async function testConnection(btn,url,name){
-  const el=_getTestEl(btn,url,name);if(!el)return;
+async function testConnection(btn,url,name,tid){
+  const el=_getTestEl(btn,url,name,tid);if(!el)return;
   el.className='test-result show testing';
   el.innerHTML='<span class="spinner"></span> 🔄 در حال تست اتصال...';
   const t0=performance.now();
+  // Try CORS first
   try{
-    const r=await fetch(url,{mode:'no-cors',redirect:'follow'});
+    const ctrl=new AbortController();const tid2=setTimeout(()=>ctrl.abort(),5000);
+    const r=await fetch(url,{redirect:'follow',signal:ctrl.signal});clearTimeout(tid2);
     const ms=Math.round(performance.now()-t0);
     el.className='test-result show active';
-    el.innerHTML='🟢 اتصال برقرار ✅<span class="test-time">'+ms+'ms</span>';
+    el.innerHTML='🟢 اتصال برقرار ✅<span class="test-time">'+ms+'ms · HTTP '+r.status+'</span>';
   }catch(e){
     const ms=Math.round(performance.now()-t0);
-    if(ms<8000){el.className='test-result show active';el.innerHTML='🟢 اتصال برقرار ✅<span class="test-time">'+ms+'ms</span>'}
-    else{el.className='test-result show inactive';el.innerHTML='❌ اتصال برقرار نشد<span class="test-time">'+ms+'ms</span>'}
+    // Fallback: no-cors (opaque = server responded)
+    try{
+      const r2=await fetch(url,{mode:'no-cors',redirect:'follow'});
+      const ms2=Math.round(performance.now()-t0);
+      el.className='test-result show active';
+      el.innerHTML='🟢 اتصال برقرار ✅<span class="test-time">'+ms2+'ms (opaque)</span>';
+    }catch(e2){
+      const ms3=Math.round(performance.now()-t0);
+      if(ms3<6000){el.className='test-result show active';el.innerHTML='🟢 اتصال برقرار ✅<span class="test-time">'+ms3+'ms</span>'}
+      else{el.className='test-result show inactive';el.innerHTML='❌ اتصال برقرار نشد<span class="test-time">'+ms3+'ms</span>'}
+    }
   }
 }
-async function testSpeed(btn,url,name){
-  const el=_getTestEl(btn,url,name);if(!el)return;
+async function testSpeed(btn,url,name,tid){
+  const el=_getTestEl(btn,url,name,tid);if(!el)return;
   el.className='test-result show testing';
   el.innerHTML='<span class="spinner"></span> ⚡ در حال تست سرعت...';
-  const times=[];const rounds=5;
+  const times=[];const rounds=3;
   for(let i=0;i<rounds;i++){
-    try{const t0=performance.now();await fetch(url,{redirect:'follow',cache:'no-store'});times.push(Math.round(performance.now()-t0))}
-    catch(e){times.push(9999)}
-    await new Promise(r=>setTimeout(r,300));
+    try{
+      const ctrl=new AbortController();const t=setTimeout(()=>ctrl.abort(),3000);
+      const t0=performance.now();await fetch(url,{redirect:'follow',cache:'no-store',signal:ctrl.signal});clearTimeout(t);
+      times.push(Math.round(performance.now()-t0));
+    }catch(e){times.push(9999)}
+    if(i<rounds-1)await new Promise(r=>setTimeout(r,200));
   }
   const avg=Math.round(times.reduce((a,b)=>a+b,0)/times.length);
   const min=Math.min(...times);const max=Math.max(...times);
@@ -889,6 +910,24 @@ async function testSpeed(btn,url,name){
 render();
 renderFooter();
 if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+// Auto-load worker list from saved token
+(function(){
+  const saved=localStorage.getItem('cf_token');
+  if(saved&&saved.startsWith('cfut_')){
+    deployState.token=saved;$('tokenIn').value=saved;
+    fetch(BACKEND+'/deploy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:saved,panelType:'validate'})})
+    .then(r=>r.json()).then(d=>{
+      if(d.success){
+        $('tokenResult').innerHTML='<div class="alert alert-success" style="margin-top:12px">✅ توکن ذخیره شده!</div>';
+        $('panelCard').style.display='block';
+        if(d.accountId)deployState.accountId=d.accountId;
+        return fetch(BACKEND+'/list-workers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:saved})});
+      }
+    }).then(r=>r?r.json():null).then(d=>{
+      if(d&&d.success&&d.workers&&d.workers.length)renderWorkerList(d.workers);
+    }).catch(()=>{});
+  }
+})();
 // Theme toggle event
 $('themeToggle').addEventListener('click',toggleTheme);
 // Delete/Update event listeners (re-attach on each render)
@@ -970,4 +1009,4 @@ async function speedTest(){
 </script>
 </body>
 </html>
-<!-- v5.1.4 -->
+<!-- v5.1.5 -->

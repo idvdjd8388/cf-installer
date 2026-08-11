@@ -6,7 +6,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<title>CF Installer v5.4.0</title>
+<title>CF Installer v5.4.1</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#000">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -285,7 +285,7 @@ body::after{
   <header class="header">
     <div class="logo">CF INSTALLER</div>
     <div class="logo-sub">نصب‌کننده خودکار پنل‌های Cloudflare Worker</div>
-    <div class="logo-ver">v5.4.0</div>
+    <div class="logo-ver">v5.4.1</div>
     <a href="https://t.me/Cf_Arshia_Bot" target="_blank" class="btn btn-secondary btn-sm" style="margin-top:14px;text-decoration:none">🤖 ربات تلگرام</a>
   </header>
   <div id="content"></div>
@@ -484,7 +484,7 @@ function render(){
         $('tokenResult').innerHTML='<div class="alert alert-success" style="margin-top:12px">✅ توکن معتبر است!</div>';
         $('panelCard').style.display='block';
         toast('✅ توکن معتبر!');
-        if(d.accountId)deployState.accountId=d.accountId;deployState.token=token;localStorage.setItem('cf_token',token);
+        if(d.accountId)deployState.accountId=d.accountId;deployState.token=token;
         // Get subdomain from user email
         try{
           const subRes=await fetch(BACKEND+'/get-subdomain',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token})});
@@ -752,7 +752,7 @@ async function updateWorker(){
     const branch=repoCfg.release||'main';
     const srcUrl='https://raw.githubusercontent.com/'+repoCfg.repo+'/'+branch+'/'+repoCfg.file;
     const srcR=await fetch(BACKEND+'/github',{method:'POST',headers:{'Content-Type':'application/json','X-GitHub-Url':srcUrl}});
-    const srcText=await srcR.text();
+    let srcText=await srcR.text();
     if(!srcR.ok||srcText.includes('Not Found')||srcText.includes('404'))throw new Error('کد منبع یافت نشد');
     dl.innerHTML+='<br><span class="log-ok">✅ کد دانلود شد: '+(srcText.length/1024).toFixed(0)+'KB</span>';
     // Obfuscate if nova
@@ -1008,4 +1008,4 @@ async function speedTest(){
 </script>
 </body>
 </html>
-<!-- v5.4.0 -->
+<!-- v5.4.1 -->

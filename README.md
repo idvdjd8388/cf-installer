@@ -2,12 +2,12 @@
 
 ### نصب یک‌کلیکی پنل‌های VPN روی Cloudflare Worker
 
-[![v4.7.0](https://img.shields.io/badge/version-v4.7.0-00e5a0?style=flat-square)](https://arshiyashams675-sudo.github.io/cf-installer/)
+[![v5.1.3](https://img.shields.io/badge/version-v5.1.3-00e5a0?style=flat-square)](https://idvdjd8388.github.io/cf-installer/)
 [![Panels](https://img.shields.io/badge/پنل‌ها-9_عدد-blue?style=flat-square)](#-پنل‌های-پشتیبانی-شده)
 [![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](#)
 
 <p align="center">
-  <a href="https://arshiyashams675-sudo.github.io/cf-installer/">
+  <a href="https://idvdjd8388.github.io/cf-installer/">
     <img src="https://img.shields.io/badge/🔥_اکنون_استفاده_کن-آبی?style=for-the-badge" alt="CF Installer">
   </a>
 </p>
@@ -38,7 +38,9 @@
 - 🗑️ **حذف Worker** — دکمه حذف بعد از نصب با تأیید امنیتی
 - 🔄 **بروزرسانی** — آپدیت کد Worker با حفظ تنظیمات
 - 🌙/☀️ **حالت تاریک/روشن** — تم قابل سوئیچ با ذخیره انتخاب
-- 🏷️ **برچسب نیاز به دامنه** — نمایش نیازمندی دامنه روی پنل‌ها
+- 🟢 **تست اتصال** — بررسی فعال بودن Worker
+- ⚡ **تست سرعت** — ۵ نمونه با نمایش min/max/avg
+- 📋 **لیست ورکرها** — نمایش خودکار ورکرهای نصب شده با تشخیص نوع پنل
 
 ---
 
@@ -86,7 +88,7 @@
 ## 🚀 چطوری استفاده کنم؟
 
 ### مرحله ۱: ساخت API Token
-1. برید به [CF Installer](https://arshiyashams675-sudo.github.io/cf-installer/)
+1. برید به [CF Installer](https://idvdjd8388.github.io/cf-installer/)
 2. روی **🔑 ساخت توکن** بزنید (مجوزها خودکار انتخاب شده)
 3. توکن رو کپی کنید
 
@@ -150,11 +152,40 @@
 | FoxCloud | — | — | `UUID`, `PROXY_IP` |
 | amcf | — | `amclubs` | `UUID` |
 | VTPanel | — | `VTPanel` | — |
-|| v2ray-worker | — | `settings` | — |
+| v2ray-worker | — | `settings` | — |
 
 ---
 
 ## 📝 تغییرات
+
+<details>
+<summary><b>v5.1.3</b></summary>
+
+- ✅ فیکس تشخیص نوع پنل (اولویت با PANEL_TYPE binding)
+- ✅ جدا شدن دکمه‌های تست اتصال 🟢 و تست سرعت ⚡
+- ✅ نمایش برچسب پروتکل و توضیح در لیست ورکرها
+- ✅ آپدیت آیکون و استایل لیست ورکرها
+
+</details>
+
+<details>
+<summary><b>v5.1.0</b></summary>
+
+- ✅ اضافه شدن تشخیص خودکار نوع پنل از PANEL_TYPE binding
+- ✅ جدا شدن تست اتصال و تست سرعت
+- ✅ آپدیت UI لیست ورکرها
+
+</details>
+
+<details>
+<summary><b>v5.0.0</b></summary>
+
+- ✅ اضافه شدن لیست ورکرهای نصب شده
+- ✅ تشخیص خودکار نوع پنل
+- ✅ دکمه بروزرسانی و حذف برای هر ورکر
+- ✅ تست سرعت و اتصال
+
+</details>
 
 <details>
 <summary><b>v4.7.0</b></summary>
@@ -193,74 +224,6 @@ bash <(curl -fsSL https://raw.githubusercontent.com/arshiyashams675-sudo/cf-inst
 4. پنل رو انتخاب کن
 5. تمام!
 
-<details>
-<summary><b>v4.6.3</b></summary>
-
-- ✅ فیکس نام فایل cfnew
-- ✅ فیکس `panelPath` برای پنل‌های UUID‌دار
-- ✅ تشخیص سوب‌دامین با proxy
-- ✅ کاهش زمان انتظار workers.dev از ۱۰ ثانیه به ۲ ثانیه
-- ✅ نمایش progress bar
-- ✅ لیست Workerهای فعال
-- ✅ PANEL_TYPE برای هر ۱۰ پنل
-- ✅ اضافه شدن پنل **v2ray-worker**
-
-</details>
-
-<details>
-<summary><b>v4.3.3</b></summary>
-
-- ✅ حذف **Zeus Panel** (مشکل امنیتی — بدافزار از راه دور)
-- ✅ فیکس باگ سوب‌دامین (۸ استراتژی + URL verification)
-- ✅ اضافه شدن **GitHack CDN** (سریع‌تر برای ایران — فیلتر نیست)
-- ✅ اضافه شدن **📊 تست اتصال** (بررسی فعال بودن Worker با زمان پاسخ)
-- ✅ اضافه شدن `githack.com` به whitelist پروکسی GitHub
-- ✅ اضافه شدن پنل **v2ray-worker** (V2Ray — VLESS + Trojan — Subscription — KV)
-
-</details>
-
-<details>
-<summary><b>v4.0.0</b></summary>
-
-- ✅ ریدیزاین کامل UI (مدرن + تاریک)
-- ✅ اضافه شدن **FoxCloud** (VLESS سبک — 151 ⭐)
-- ✅ اضافه شدن **amcf** (VLESS + Trojan — 3.1k ⭐)
-- ✅ اضافه شدن **ZQ-VTPanel** (VLESS + Trojan — 62 ⭐)
-- ✅ حذف CF-VLESS و CF-Trojan (غیرفعال)
-- ✅ حذف Zeus Panel (ریپو حذف شده)
-- ✅ فیکس Content-Type باگ در آپلود Worker
-- ✅ فیکس URL آدرس پنل (سادومین درست)
-- ✅ امنیت: Origin Check + Whitelist + Token Validation
-- ✅ حذف proxy-worker.js (پروکسی خطرناک)
-- ✅ آپدیت تعداد ستاره‌های پروژه‌ها
-- ✅ حذف بخش SOCKS5/HTTP از EDtunnel
-- ✅ نوار پیشرفت مراحل نصب
-- ✅ برچسب پروتکل (VLESS/Trojan) روی پنل‌ها
-- ✅ راهنمای سریع (tooltip) برای هر پنل
-- ✅ پشتیبانی PWA (نصب روی صفحه اصلی)
-
-</details>
-
-<details>
-<summary><b>v3.2.0</b></summary>
-
-- ✅ اضافه شدن **EDtunnel** (VLESS/Trojan — 2.9k ⭐)
-- ✅ اضافه شدن **Zeus Panel** (مدیریت کاربران — 813 ⭐)
-- ✅ لینک‌های مستقیم مسیرها با دکمه کپی
-- ✅ UUID خودکار برای EDtunnel و Cfnew
-- ✅ رمز عبور خودکار برای Edge و Nova
-
-</details>
-
-<details>
-<summary><b>v3.0.0</b></summary>
-
-- ✅ بازنویسی کامل با Backend Worker
-- ✅ دور زدن محدودیت‌های اینترنت ایران
-- ✅ اسامی رندوم Worker (جلوگیری از فیلتر)
-
-</details>
-
 ---
 
 ## ⚠️ نکات مهم
@@ -278,8 +241,8 @@ bash <(curl -fsSL https://raw.githubusercontent.com/arshiyashams675-sudo/cf-inst
 
 | لینک | آدرس |
 |:---:|:---:|
-| 🌐 **Installer** | [arshiyashams675-sudo.github.io/cf-installer](https://arshiyashams675-sudo.github.io/cf-installer/) |
-| 📦 **GitHub Repo** | [arshiyashams675-sudo/cf-installer](https://github.com/arshiyashams675-sudo/cf-installer) |
+| 🌐 **Installer** | [idvdjd8388.github.io/cf-installer](https://idvdjd8388.github.io/cf-installer/) |
+| 📦 **GitHub Repo** | [idvdjd8388/cf-installer](https://github.com/idvdjd8388/cf-installer) |
 | ⚙️ **Backend Worker** | [cf-installer-backend.cf-installer.workers.dev](https://cf-installer-backend.cf-installer.workers.dev) |
 | 🔑 **ساخت API Token** | [dash.cloudflare.com](https://dash.cloudflare.com/profile/api-tokens) |
 

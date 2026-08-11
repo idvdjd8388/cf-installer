@@ -6,7 +6,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<title>CF Installer v5.1.5</title>
+<title>CF Installer v5.2.0</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#000">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -285,7 +285,7 @@ body::after{
   <header class="header">
     <div class="logo">CF INSTALLER</div>
     <div class="logo-sub">نصب‌کننده خودکار پنل‌های Cloudflare Worker</div>
-    <div class="logo-ver">v5.1.5</div>
+    <div class="logo-ver">v5.2.0</div>
     <a href="https://t.me/Cf_Arshia_Bot" target="_blank" class="btn btn-secondary btn-sm" style="margin-top:14px;text-decoration:none">🤖 ربات تلگرام</a>
   </header>
   <div id="content"></div>
@@ -769,46 +769,33 @@ function renderWorkerList(workers){
   const el=document.createElement('div');
   el.id='workerListCard';
   el.className='card';
-  el.innerHTML=`<div class="card-title"><span class="icon">📋</span> ورکرهای شما (${workers.length})</div><div class="card-subtitle">تشخیص خودکار نوع پنل</div><div id="workerListItems"></div>`;
+  el.innerHTML=`<div class="card-title"><span class="icon">📋</span> ورکرهای شما (${workers.length})</div><div id="workerListItems"></div>`;
   const pc=document.getElementById('panelCard');
   if(pc&&pc.parentNode)pc.parentNode.insertBefore(el,pc);
   const list=$('workerListItems');
-  const protoBadge=(p)=>`<span class="proto-badge proto-${p.toLowerCase()}">${p}</span>`;
-  workers.forEach((w,idx)=>{
-    const badges=(w.proto||[]).map(protoBadge).join('');
+  workers.forEach((w)=>{
     const div=document.createElement('div');
     div.className='result-box';
-    div.style.cssText='margin-bottom:10px;padding:14px';
+    div.style.cssText='margin-bottom:10px;padding:12px 14px';
     const safeName=esc(w.name);const safeType=esc(w.panelType);const safeUrl=esc(w.url||'');
-    const tid='test-'+w.name.replace(/[^a-zA-Z0-9]/g,'_')+'-'+idx;
     div.innerHTML=`
-      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-        <div style="display:flex;align-items:center;gap:10px;min-width:0">
-          <span style="font-size:1.6rem">${w.panelIcon||'📦'}</span>
-          <div style="min-width:0">
-            <div style="font-weight:700;word-break:break-all;font-size:0.9rem">${safeName}</div>
-            <div style="opacity:0.5;font-size:0.78rem;margin-top:2px">${esc(w.panelName)} · <code style="font-size:0.7rem;opacity:0.7">${safeType}</code></div>
-            ${w.desc?`<div style="opacity:0.4;font-size:0.72rem;margin-top:2px">${esc(w.desc)}</div>`:''}
-            ${badges?`<div class="panel-badges" style="justify-content:flex-start;margin-top:4px">${badges}</div>`:''}
-          </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+        <div style="min-width:0;flex:1">
+          <div style="font-weight:700;font-size:0.88rem;word-break:break-all">${safeName}</div>
+          <div style="opacity:0.4;font-size:0.72rem;margin-top:2px">${safeType}</div>
         </div>
-        <div style="display:flex;gap:8px;flex-shrink:0">
-          ${w.url?`<a href="${safeUrl}" target="_blank" class="btn btn-secondary btn-sm" style="font-size:0.75rem;padding:0 12px" title="باز کردن پنل">🔗</a>`:''}
+        <div style="display:flex;gap:6px;flex-shrink:0">
           <button class="btn btn-sm wu-btn" style="background:var(--blue);color:#fff;font-size:0.75rem;padding:0 12px" title="بروزرسانی" data-name="${safeName}" data-type="${safeType}">🔄</button>
-          <button class="btn btn-sm wd-btn" style="background:var(--red);color:#fff;font-size:0.75rem;padding:0 12px" title="حذف" data-name="${safeName}">🗑️</button>
+          ${w.url?`<a href="${safeUrl}" target="_blank" class="btn btn-secondary btn-sm" style="font-size:0.75rem;padding:0 12px;text-decoration:none" title="ورود به پنل">🔗</a>`:''}
+          ${w.url?`<button class="btn btn-sm wc-btn" style="background:var(--bg3);color:var(--text2);font-size:0.75rem;padding:0 12px;border:1px solid var(--border)" title="کپی آدرس" data-url="${safeUrl}">📋</button>`:''}
+          <button class="btn btn-sm wd-btn" style="background:rgba(239,68,68,.1);color:var(--red);font-size:0.75rem;padding:0 12px;border:1px solid rgba(239,68,68,.2)" title="حذف" data-name="${safeName}">🗑️</button>
         </div>
       </div>
-      ${w.url?`<div style="margin-top:10px;display:flex;gap:6px">
-        <button class="btn btn-sm tc-btn" style="background:var(--bg3);color:var(--green);font-size:0.73rem;flex:1" data-url="${safeUrl}" data-name="${safeName}" data-tid="${tid}">🟢 تست اتصال</button>
-        <button class="btn btn-sm ts-btn" style="background:var(--bg3);color:var(--cyan);font-size:0.73rem;flex:1" data-url="${safeUrl}" data-name="${safeName}" data-tid="${tid}">⚡ تست سرعت</button>
-      </div><div class="test-result" id="${tid}" style="margin-top:8px"></div>`:''}
     `;
     list.appendChild(div);
-    // Attach event listeners safely (no inline onclick)
     div.querySelector('.wu-btn')?.addEventListener('click',function(){quickUpdate(this.dataset.name,this.dataset.type)});
     div.querySelector('.wd-btn')?.addEventListener('click',function(){quickDelete(this.dataset.name)});
-    div.querySelector('.tc-btn')?.addEventListener('click',function(){testConnection(this,this.dataset.url,this.dataset.name,this.dataset.tid)});
-    div.querySelector('.ts-btn')?.addEventListener('click',function(){testSpeed(this,this.dataset.url,this.dataset.name,this.dataset.tid)});
+    div.querySelector('.wc-btn')?.addEventListener('click',function(){cpB(this,this.dataset.url)});
   });
 }
 
@@ -846,7 +833,7 @@ async function quickUpdate(name,panelType){
     const putD=await putR.json();
     if(!putD.success)throw new Error('خطا در آپدیت');
     toast('✅ آپدیت کامل شد!');
-    document.querySelectorAll('.wd-btn,.wu-btn,.tc-btn,.ts-btn').forEach(b=>b.disabled=true);
+    document.querySelectorAll('.wd-btn,.wu-btn,.wc-btn').forEach(b=>b.disabled=false)
     setTimeout(()=>location.reload(),500);
   }catch(e){toast('❌ '+e.message)}
 }
@@ -883,29 +870,7 @@ async function testConnection(btn,url,name,tid){
     }
   }
 }
-async function testSpeed(btn,url,name,tid){
-  const el=_getTestEl(btn,url,name,tid);if(!el)return;
-  el.className='test-result show testing';
-  el.innerHTML='<span class="spinner"></span> ⚡ در حال تست سرعت...';
-  const times=[];const rounds=3;
-  for(let i=0;i<rounds;i++){
-    try{
-      const ctrl=new AbortController();const t=setTimeout(()=>ctrl.abort(),3000);
-      const t0=performance.now();await fetch(url,{redirect:'follow',cache:'no-store',signal:ctrl.signal});clearTimeout(t);
-      times.push(Math.round(performance.now()-t0));
-    }catch(e){times.push(9999)}
-    if(i<rounds-1)await new Promise(r=>setTimeout(r,200));
-  }
-  const avg=Math.round(times.reduce((a,b)=>a+b,0)/times.length);
-  const min=Math.min(...times);const max=Math.max(...times);
-  let score,emoji;
-  if(avg<200){score='عالی ⭐⭐⭐';emoji='🚀'}
-  else if(avg<500){score='خوب ⭐⭐';emoji='⚡'}
-  else if(avg<1500){score='متوسط ⭐';emoji='🐌'}
-  else{score='کند';emoji='🐢'}
-  el.className='test-result show active';
-  el.innerHTML=emoji+' سرعت: '+avg+'ms ('+score+')<br><span class="test-time" style="font-size:12px;opacity:.7">min: '+min+'ms · max: '+max+'ms · '+rounds+' نمونه</span>';
-}
+
 
 render();
 renderFooter();
@@ -1009,4 +974,4 @@ async function speedTest(){
 </script>
 </body>
 </html>
-<!-- v5.1.5 -->
+<!-- v5.2.0 -->

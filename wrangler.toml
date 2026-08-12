@@ -1,0 +1,13 @@
+name = "cf-installer-bot"
+main = "bot.js"
+compatibility_date = "2024-09-22"
+compatibility_flags = ["nodejs_compat"]
+
+[[d1_databases]]
+binding = "D1"
+database_name = "cf-installer-bot-db"
+database_id = "PLACEHOLDER"
+
+[vars]
+BACKEND_URL = "https://cf-installer-backend.cf-installer.workers.dev"
+BOT_SECRET = "***"

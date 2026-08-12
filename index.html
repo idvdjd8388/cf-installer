@@ -6,7 +6,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<title>CF Installer v5.5.0</title>
+<title>CF Installer v6.0.0</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#000">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -285,7 +285,7 @@ body::after{
   <header class="header">
     <div class="logo">CF INSTALLER</div>
     <div class="logo-sub">نصب‌کننده خودکار پنل‌های Cloudflare Worker</div>
-    <div class="logo-ver">v5.5.0</div>
+    <div class="logo-ver">v6.0.0</div>
     <a href="https://t.me/Cf_Arshia_Bot" target="_blank" class="btn btn-secondary btn-sm" style="margin-top:14px;text-decoration:none">🤖 ربات تلگرام</a>
   </header>
   <div id="content"></div>
@@ -342,7 +342,7 @@ const PANEL_STARS={
 
 let selectedPanel=null;
 // Deploy state (for delete/update after install)
-let deployState={token:'',accountId:'',workerName:'',panelType:'',panelURL:'',panelPath:'',uuid:null,subdomain:''};
+let deployState={token:'',accountId:'',workerName:'',panelType:'',panelURL:'',panelPath:'',uuid:null,subdomain:'',installMode:'normal'};
 // Backend repos (mirrors backend config for update feature)
 const DEPLOY_REPOS={
   nahan:{repo:'itsyebekhe/nahan',file:'_worker.js'},
@@ -508,7 +508,14 @@ function render(){
     $('validateBtn').textContent='🔍 بررسی توکن';$('validateBtn').disabled=false;
   });
 
-  // Deploy
+  // Install mode
+function setInstallMode(mode){
+  deployState.installMode=mode;
+  document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector('.mode-btn[data-mode="'+mode+'"]').classList.add('active');
+}
+
+// Deploy
   $('deployBtn').addEventListener('click',async()=>{
     const token=$('tokenIn').value.trim();
     if(!selectedPanel){toast('⚠️ پنل را انتخاب کنید');return}
@@ -528,7 +535,7 @@ function render(){
       });
     }
 
-    const payload={token,panelType:selectedPanel,vars};
+    const payload={token,panelType:selectedPanel,installMode:deployState.installMode,vars};
     if(cfg&&cfg.pages) payload.pages=true;
 
     try{
@@ -711,11 +718,14 @@ function updatePanelVars(panel){
 
 // Obfuscate code for nova panel
 async function obfuscateJS(code){
-  if(typeof JavaScriptObfuscator==='undefined')return code;
+  if(typeof JavaScriptObfuscator==='undefined'){console.warn('obfuscator not loaded');return code}
   try{
     const result=JavaScriptObfuscator.obfuscate(code,{compact:true,controlFlowFlattening:true,controlFlowFlatteningThreshold:0.5,deadCodeInjection:true,deadCodeInjectionThreshold:0.2,stringArray:true,stringArrayEncoding:['base64'],stringArrayThreshold:0.75,renameGlobals:false,selfDefending:false,debugProtection:false});
     return result.getObfuscatedCode();
   }catch(e){console.warn('obfuscate failed:',e);return code}
+}
+function minifyJS(code){
+  return code.replace(/\/\/[^\n]*/g,'').replace(/\/\*[\s\S]*?\*\//g,'').replace(/\s+/g,' ').replace(/\s*([{};,:=])\s*/g,'$1').trim();
 }
 
 // Delete Worker
@@ -848,11 +858,12 @@ async function quickUpdate(name,panelType){
     const srcR=await fetch(BACKEND+'/github',{method:'POST',headers:{'Content-Type':'application/json','X-GitHub-Url':srcUrl}});
     let srcText=await srcR.text();
     if(!srcR.ok||srcText.includes('404'))throw new Error('کد منبع یافت نشد');
-    // Obfuscate if nova
-    if(panelType==='nova'){
+    // Obfuscate if obfuscated mode
+    if(deployState.installMode==='obfuscated'){
       const origSize=srcText.length;
-      srcText=await obfuscateJS(srcText);
-      toast('🔒 obfuscate: '+(origSize/1024).toFixed(0)+'KB → '+(srcText.length/1024).toFixed(0)+'KB');
+      if(['nova','edge','nahan'].includes(panelType))srcText=await obfuscateJS(srcText);
+      else srcText=minifyJS(srcText);
+      toast('🔒 processed: '+(origSize/1024).toFixed(0)+'KB → '+(srcText.length/1024).toFixed(0)+'KB');
     }
     const metaR=await fetch(BACKEND+'/cf',{method:'POST',headers:{'Authorization':'Bearer '+deployState.token,'Content-Type':'application/json','X-CF-Path':'/accounts/'+deployState.accountId+'/workers/scripts/'+name,'X-CF-Method':'GET'}});
     const metaD=await metaR.json();
@@ -989,4 +1000,4 @@ async function speedTest(){
 </script>
 </body>
 </html>
-<!-- v5.5.0 -->
+<!-- v6.0.0 -->

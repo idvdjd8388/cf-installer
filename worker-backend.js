@@ -304,76 +304,54 @@ export default {
         if(!sub){try{const uR=await cfDirect(h,'/user');if(uR&&uR.success&&uR.result&&uR.result.username)sub=uR.result.username;}catch(e){}}
         const scriptsR=await cfDirect(h,`/accounts/${aid}/workers/scripts`);
         if(!scriptsR.success)return R({success:false,error:'خطا در دریافت لیست Workerها'},200,corsHeaders);
-        const PANEL_META={nahan:{name:'Nahan',icon:'🌙',proto:['VLESS'],desc:'پنل سبک با D1',path:'/sync/dash'},edge:{name:'EdgeTunnel',icon:'⚡',proto:['VLESS','Trojan'],desc:'محبوب‌ترین پنل با KV',path:'/admin'},cfnew:{name:'Cfnew',icon:'🌟',proto:['VLESS'],desc:'پنل مدرن با KV',path:'/'},nova:{name:'Nova',icon:'🚀',proto:['VLESS'],desc:'پنل پیشرفته D1+KV',path:'/admin'},edgtun:{name:'EDtunnel',icon:'🌍',proto:['VLESS'],desc:'EDtunnel VLESS',path:'/'},fox:{name:'FoxCloud',icon:'🦊',proto:['VLESS'],desc:'FoxCloud VLESS',path:'/sub'},amcf:{name:'AMCF',icon:'🇨🇳',proto:['VLESS','Trojan'],desc:'am-cf-tunnel با KV',path:'/'},vtpanel:{name:'VTPanel',icon:'🛡️',proto:['VLESS','Trojan'],desc:'ZQ-VTPanel با KV',path:'/'},v2ray:{name:'v2ray-worker',icon:'🐸',proto:['VLESS','Trojan'],desc:'v2ray-worker با KV',path:'/'},kennedy:{name:'Kennedy',icon:'🎯',proto:['VLESS'],desc:'Kennedy Proxy Panel',path:'/admin'},worker:{name:'Unknown',icon:'⚙️',proto:[],desc:'ورکر ناشناخته',path:'/'}};
+        const PANEL_LOOK={nova:{name:'Nova Proxy',icon:'🚀',path:'/admin'},edge:{name:'EdgeTunnel',icon:'🌐',path:'/admin'},nahan:{name:'Nahan',icon:'🛡️',path:'/sync/dash'},edgtun:{name:'EDtunnel',icon:'⚡',path:'/'},fox:{name:'FoxCloud',icon:'🦊',path:'/sub'},amcf:{name:'AMCF',icon:'🔗',path:'/'},vtpanel:{name:'VTPanel',icon:'📺',path:'/'},v2ray:{name:'v2ray-worker',icon:'🔧',path:'/'},cfnew:{name:'Cfnew',icon:'🌟',path:'/'},kennedy:{name:'Kennedy',icon:'🎯',path:'/admin'},unknown:{name:'Unknown',icon:'⚙️',path:'/'}};
+        function detectPanelType(code,bindings){
+          if(bindings){
+            const kvN=bindings.filter(b=>b.type==='kv_namespace').map(b=>b.name);
+            const d1N=bindings.filter(b=>b.type==='d1_database').map(b=>b.name);
+            if(kvN.includes('Nova')||kvN.includes('KV'))return'nova';
+            if(kvN.includes('EdgeTunnel'))return'edge';
+            if(kvN.includes('EDtunnel'))return'edgtun';
+            if(kvN.includes('VTPanel'))return'vtpanel';
+            if(kvN.includes('settings'))return'v2ray';
+            if(d1N.includes('DB'))return'nahan';
+          }
+          if(!code)return'unknown';
+          if(/NovaProxy|Nova-Proxy|Nova_Mirror|irNova/i.test(code))return'nova';
+          if(/EdgeTunnel|edgetunnel/i.test(code))return'edge';
+          if(/nahan|Nahan/i.test(code))return'nahan';
+          if(/EDtunnel|edgtunnel/i.test(code))return'edgtun';
+          if(/FoxCloud|foxcloud/i.test(code))return'fox';
+          if(/am-cf|AMCF|amclubs/i.test(code))return'amcf';
+          if(/VTPanel|ZQ-VTPanel/i.test(code))return'vtpanel';
+          if(/v2ray|v2ray-worker/i.test(code))return'v2ray';
+          return'unknown';
+        }
         const workers=[];
         for(const w of scriptsR.result||[]){
           const name=w.id;
-          let panelType='unknown',panelName='Worker',panelIcon='⚙️',proto=[],desc='',path='/';
+          let panelType='unknown';
+          let code='';
           try{
             const metaR=await cfDirect(h,`/accounts/${aid}/workers/scripts/${name}`);
             if(metaR&&metaR.success&&metaR.result){
               const bindings=metaR.result.bindings||[];
-              // === Priority 1: PANEL_TYPE binding (set by CF Installer) ===
-              const ptBinding=bindings.find(b=>(b.type==='plain_text'||b.type==='secret_text')&&b.name==='PANEL_TYPE');
-              if(ptBinding&&ptBinding.text){panelType=ptBinding.text}
-              // === Priority 2: Binding names ===
+              // Priority 1: PANEL_TYPE binding
+              const pt=bindings.find(b=>(b.type==='plain_text'||b.type==='secret_text')&&b.name==='PANEL_TYPE');
+              if(pt&&pt.text)panelType=pt.text;
+              // Priority 2: detect from bindings + code
               else{
-                const d1Bindings=bindings.filter(b=>b.type==='d1');
-                const kvBindings=bindings.filter(b=>b.type==='kv_namespace');
-                const kvNames=kvBindings.map(b=>b.name);
-                const hasD1=d1Bindings.length>0;
-                // Check specific KV binding names
-                if(kvNames.includes('Nova'))panelType='nova';
-                else if(kvNames.includes('EdgeTunnel'))panelType='edge';
-                else if(kvNames.includes('EDtunnel'))panelType='edgtun';
-                else if(kvNames.includes('VTPanel'))panelType='vtpanel';
-                else if(kvNames.includes('settings'))panelType='v2ray';
-                else if(kvNames.includes('amclubs'))panelType='amcf';
-                else if(kvNames.includes('C'))panelType='cfnew';
-                else if(hasD1&&kvNames.includes('KV'))panelType='nova';
-                else if(hasD1&&kvNames.length===0)panelType='nahan';
-                else if(hasD1)panelType='nova';
-                else if(kvBindings.length>0)panelType='edge';
-                else panelType='edgtun';
-              }
-              // === Priority 3: Code content (fetch and check) ===
-              if(panelType==='unknown'||panelType==='worker'){
                 try{
-                  const codeUrl=`https://raw.githubusercontent.com/${w.modified_on?w.modified_on:''}`;
-                  // Try fetching code from CDN
                   const scR=await cfDirect(h,`/accounts/${aid}/workers/scripts/${name}/content`);
-                  if(scR&&scR.success){
-                    const b64=scR.result||'';
-                    const code=atob(b64);
-                    if(/NovaProxy|Nova-Proxy/i.test(code))panelType='nova';
-                    else if(/EdgeTunnel|edgetunnel/i.test(code))panelType='edge';
-                    else if(/Nahan|nahan/i.test(code))panelType='nahan';
-                    else if(/EDtunnel|edgtunnel/i.test(code))panelType='edgtun';
-                    else if(/FoxCloud|foxcloud/i.test(code))panelType='fox';
-                    else if(/AMCF|am-cf/i.test(code))panelType='amcf';
-                    else if(/VTPanel|ZQ-VTPanel/i.test(code))panelType='vtpanel';
-                    else if(/v2ray/i.test(code))panelType='v2ray';
-                    else if(/kennedy|Kennedy/i.test(code))panelType='kennedy';
-                    else if(/cfnew|Cfnew/i.test(code))panelType='cfnew';
-                  }
+                  if(scR&&scR.success)code=atob(scR.result||'');
                 }catch(e){}
+                panelType=detectPanelType(code,bindings);
               }
-              // === Priority 4: Metadata vars ===
-              if(panelType==='unknown'||panelType==='worker'){
-                const varBindings=bindings.filter(b=>b.type==='plain_text'||b.type==='secret_text');
-                const vt=varBindings.find(b=>b.name==='PANEL_TYPE');
-                if(vt&&vt.text)panelType=vt.text;
-                else{
-                  const va=varBindings.find(b=>b.name==='ADMIN');
-                  if(va)panelType='nova';
-                }
-              }
-              const m=PANEL_META[panelType]||PANEL_META.worker;
-              panelIcon=m.icon;panelName=m.name||panelType.charAt(0).toUpperCase()+panelType.slice(1);proto=m.proto;desc=m.desc;path=m.path;
             }
           }catch(e){}
-          let workerURL=sub?`https://${name}.${sub}.workers.dev`:'';
-          workers.push({name,panelType,panelName,panelIcon,url:workerURL,proto,desc,path});
+          const meta=PANEL_LOOK[panelType]||PANEL_LOOK.unknown;
+          const workerURL=sub?`https://${name}.${sub}.workers.dev${meta.path}`:'';
+          workers.push({name,panelType,panelName:meta.name,panelIcon:meta.icon,url:workerURL,desc:meta.name});
         }
         return R({success:true,workers,subdomain:sub},200,corsHeaders);
       }catch(e){return R({success:false,error:e.message},200,corsHeaders)}

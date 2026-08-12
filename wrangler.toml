@@ -6,7 +6,7 @@ compatibility_flags = ["nodejs_compat"]
 [[d1_databases]]
 binding = "D1"
 database_name = "cf-installer-bot-db"
-database_id = "PLACEHOLDER"
+database_id = "b1d70518-f70c-4732-90cb-dcfcd6e11f9e"
 
 [vars]
 BACKEND_URL = "https://cf-installer-backend.cf-installer.workers.dev"

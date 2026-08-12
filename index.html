@@ -393,6 +393,10 @@ function render(){
       <div class="card-title"><span class="icon">🎯</span> پنل مورد نظر را انتخاب کنید</div>
       <div class="panel-grid" id="panelGrid"></div>
       <div id="panelVars" class="panel-vars"></div>
+      <div class="install-modes" id="installModes">
+        <button class="mode-btn active" data-mode="normal" onclick="setInstallMode('normal')">⚡ نصب عادی</button>
+        <button class="mode-btn obfuscated" data-mode="obfuscated" onclick="setInstallMode('obfuscated')">🔒 Obfuscated</button>
+      </div>
       <div class="alert alert-info">💡 اسم Worker به صورت خودکار و رندوم ساخته میشود</div>
       <button class="btn btn-primary" id="deployBtn" disabled>🚀 نصب و فعال‌سازی</button>
     </div>

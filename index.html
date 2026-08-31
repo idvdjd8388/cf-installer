@@ -72,11 +72,13 @@ body::after{
 .btn-sm{height:38px;padding:0 16px;font-size:.76rem;border-radius:8px}
 .btn-group{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:14px}.btn-group .btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 12px;font-size:.8rem;border-radius:var(--radius);text-align:center;text-decoration:none;gap:6px}@media(min-width:480px){.btn-group{grid-template-columns:repeat(3,1fr)}}@media(min-width:768px){.btn-group{grid-template-columns:repeat(5,1fr)}}
 /* Install mode selector */
-.install-modes{display:flex;gap:8px;margin:14px 0}
-.mode-btn{flex:1;height:42px;border:none;border-radius:var(--radius);font-size:.8rem;font-weight:700;cursor:pointer;transition:all .3s;display:flex;align-items:center;justify-content:center;gap:6px}
-.mode-btn.active,.mode-btn:hover{background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff;box-shadow:0 4px 20px rgba(59,130,246,.3)}
+.install-modes{display:flex;gap:10px;margin:16px 0}
+.mode-btn{flex:1;height:48px;border:none;border-radius:var(--radius);font-size:.85rem;font-weight:700;cursor:pointer;transition:all .25s;display:flex;align-items:center;justify-content:center;gap:8px;position:relative;overflow:hidden}
+.mode-btn.active{background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff;box-shadow:0 0 24px rgba(59,130,246,.4);border:2px solid var(--blue3);transform:scale(1.02)}
+.mode-btn.active::after{content:'✓';position:absolute;top:4px;right:8px;font-size:.7rem;color:rgba(255,255,255,.8)}
 .mode-btn:not(.active){background:var(--bg3);color:var(--text2);border:1px solid var(--border2)}
-.mode-btn:not(.active):hover{background:var(--bg4);border-color:var(--border3)}
+.mode-btn:not(.active):hover{background:var(--bg4);border-color:var(--border3);transform:translateY(-1px)}
+.mode-btn:active{transform:scale(0.97)}
 
 /* ===== ALERTS ===== */
 .alert{padding:12px 16px;border-radius:var(--radius);font-size:.8rem;font-weight:600;margin-top:12px}
@@ -230,6 +232,8 @@ body::after{
 [data-theme="light"] .progress-track{background:var(--bg3);border-color:var(--border2)}
 [data-theme="light"] .progress-pct{color:var(--text);text-shadow:none}
 [data-theme="light"] .divider{background:linear-gradient(90deg,transparent,rgba(0,0,0,.08),transparent)}
+[data-theme="light"] .mode-btn:not(.active){background:var(--bg3);color:var(--text2);border:1px solid var(--border2)}
+[data-theme="light"] .mode-btn:not(.active):hover{background:rgba(0,184,130,.05);border-color:var(--cyan);color:var(--cyan)}
 
 /* Theme Toggle */
 .theme-toggle{position:fixed;top:16px;left:16px;width:40px;height:40px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);color:var(--text);font-size:1.1rem;cursor:pointer;z-index:100;display:flex;align-items:center;justify-content:center;transition:all .3s}
@@ -406,6 +410,7 @@ function render(){
           <div class="form-hint">نام زیردامنه شما در workers.dev — فقط برای Nova لازم است</div>
         </div>
       </div>
+      <div class="form-label" style="font-size:.76rem;color:var(--text3);margin-bottom:8px">🔧 حالت نصب را انتخاب کنید</div>
       <div class="install-modes" id="installModes">
         <button class="mode-btn active" data-mode="normal" onclick="setInstallMode('normal')">⚡ نصب عادی</button>
         <button class="mode-btn obfuscated" data-mode="obfuscated" onclick="setInstallMode('obfuscated')">🔒 Obfuscated</button>

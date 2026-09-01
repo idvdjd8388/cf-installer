@@ -1,5 +1,5 @@
 const CACHE='cf-installer-v7';
-const ASSETS=['/','/index.html','/manifest.json','/sw.js'];
+const ASSETS=['/cf-installer/','/cf-installer/index.html','/cf-installer/manifest.json','/cf-installer/sw.js'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))))});
 self.addEventListener('fetch',e=>{

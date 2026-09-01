@@ -10,7 +10,7 @@ BACKEND="https://cf-installer-backend.cf-installer.workers.dev"
 
 clear 2>/dev/null || true
 echo -e "${C}╔════════════════════════════════════╗${NC}"
-echo -e "${C}║    🔥 CF Installer v6.0.1          ║${NC}"
+echo -e "${C}║    🔥 CF Installer v6.0.2          ║${NC}"
 echo -e "${C}║  Install VPN panels on Workers    ║${NC}"
 echo -e "${C}╚════════════════════════════════════╝${NC}"
 

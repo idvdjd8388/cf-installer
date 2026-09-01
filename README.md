@@ -1,7 +1,7 @@
 # 🚀 CF Panel Installer — نصب آسان پنل‌های V2Ray، VLESS، Trojan روی Cloudflare Workers
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Version-v6.0.0-orange" alt="Version"/>
+  <img src="https://img.shields.io/badge/Version-v6.0.1-orange" alt="Version"/>
   <img src="https://img.shields.io/badge/Dashboard-Ready-green" alt="Status"/>
   <img src="https://img.shields.io/github/stars/idvdjd8388/cf-installer?style=social" alt="Stars"/>
   <img src="https://img.shields.io/github/license/idvdjd8388/cf-installer?label=License" alt="License"/>
@@ -114,7 +114,7 @@ curl -fsSL https://raw.githubusercontent.com/idvdjd8388/cf-installer/main/instal
 
 | مشکل | راه‌حل |
 |------|--------|
-| دکمه‌ها ظاهر نمی‌شن | Ctrl+F5 یا Clear Cache را بزنید (سرویس ورکر v6 به‌روز شده) |
+| دکمه‌ها ظاهر نمی‌شن | Ctrl+F5 یا Clear Cache را بزنید (سرویس ورکر v6.0.1 به‌روز شده) |
 | توکن نامعتبر | توکن را از https://dash.cloudflare.com/profile/api-tokens دوباره بسازید |
 | پنل ایجاد نشد | مطمئن شوید حداقل ۱ Worker در حساب شما فعال است |
 | ساب دامنه نشناخته شد | از حالت v2ray-worker یا EdgeTunnel استفاده کنید، سپس دوباره امتحان کنید |

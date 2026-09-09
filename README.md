@@ -164,11 +164,15 @@ curl -fsSL https://raw.githubusercontent.com/idvdjd8388/cf-installer/main/instal
 
 ### اجرای سریع
 
-```bash
-# روش ۱: یک‌خطی (پیشنهادی)
-curl -fsSL https://raw.githubusercontent.com/idvdjd8388/cf-installer/main/install.sh | bash
+**روش ۱: یک‌خطی (پیشنهادی)**
 
-# روش ۲: دانلود و اجرا
+```bash
+curl -fsSL https://raw.githubusercontent.com/idvdjd8388/cf-installer/main/install.sh | bash
+```
+
+**روش ۲: دانلود و اجرا**
+
+```bash
 wget https://raw.githubusercontent.com/idvdjd8388/cf-installer/main/install.sh
 chmod +x install.sh
 ./install.sh

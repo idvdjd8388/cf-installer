@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  wrangler-backend:
+    image: node:20-alpine
+    working_dir: /app
+    volumes:
+      - .:/app
+      - wrangler_cache:/root/.wrangler
+    ports:
+      - "8787:8787"
+      - "8788:8788"
+    command: >
+      sh -c "npm install &&
+             npx wrangler dev worker-backend.js --local --port 8787 --host 0.0.0.0 --compatibility-date 2024-09-22 --compatibility-flags nodejs_compat"
+    environment:
+      - NODE_ENV=development
+    restart: unless-stopped
+    networks:
+      - cf-net
+
+  wrangler-bot:
+    image: node:20-alpine
+    working_dir: /app
+    volumes:
+      - .:/app
+      - wrangler_cache:/root/.wrangler
+    ports:
+      - "8789:8789"
+    command: >
+      sh -c "npx wrangler dev bot.js --local --port 8789 --host 0.0.0.0 --compatibility-date 2024-09-22 --compatibility-flags nodejs_compat"
+    depends_on:
+      - wrangler-backend
+    restart: unless-stopped
+    networks:
+      - cf-net
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - .:/usr/share/nginx/html:ro
+    depends_on:
+      - wrangler-backend
+      - wrangler-bot
+    restart: unless-stopped
+    networks:
+      - cf-net
+
+volumes:
+  wrangler_cache:
+
+networks:
+  cf-net:
+    driver: bridge

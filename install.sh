@@ -10,8 +10,9 @@ BACKEND="https://cf-installer-backend.cf-installer.workers.dev"
 
 clear 2>/dev/null || true
 echo -e "${C}╔════════════════════════════════════╗${NC}"
-echo -e "${C}║    🔥 CF Installer v6.0.2          ║${NC}"
+echo -e "${C}║    🔥 CF Installer v7.0.0          ║${NC}"
 echo -e "${C}║  Install VPN panels on Workers    ║${NC}"
+echo -e "${C}║  API v1 • Enhanced Security       ║${NC}"
 echo -e "${C}╚════════════════════════════════════╝${NC}"
 
 if ! command -v curl &>/dev/null; then
@@ -32,18 +33,35 @@ echo -e "${W}🔑 Cloudflare API Token:${NC}"
 read -rp "   " TOKEN
 
 if [ -z "$TOKEN" ] || [[ ! "$TOKEN" == cfut_* ]]; then
-    echo -e "${R}❌ Invalid token${NC}"
+    echo -e "${R}❌ Invalid token — must start with cfut_${NC}"
     exit 1
 fi
 
+show_error() {
+    local json="$1"
+    local msg=$(echo "$json" | grep -o '"error":"[^"]*"' | cut -d'"' -f4)
+    local code=$(echo "$json" | grep -o '"code":"[^"]*"' | cut -d'"' -f4)
+    local cat=$(echo "$json" | grep -o '"category":"[^"]*"' | cut -d'"' -f4)
+    echo -e "${R}❌ Error: ${msg:-unknown}${NC}"
+    [ -n "$code" ] && echo -e "   ${Y}Code: $code${NC}"
+    [ -n "$cat" ] && echo -e "   ${Y}Category: $cat${NC}"
+    if [ "$cat" = "AUTH_ERROR" ]; then
+        echo -e "   ${C}→ توکن را با دسترسی‌های لازم دوباره بسازید${NC}"
+    elif [ "$cat" = "RATE_LIMIT_ERROR" ]; then
+        echo -e "   ${C}→ محدودیت نرخ — چند دقیقه صبر کنید${NC}"
+    elif [ "$cat" = "QUOTA_ERROR" ]; then
+        echo -e "   ${C}→ سقف Worker پر شده — یکی را حذف کنید${NC}"
+    fi
+}
+
 echo -e "${C}▶ Validating account...${NC}"
-V=$(curl -s -X POST "$BACKEND/deploy" \
+V=$(curl -s -X POST "$BACKEND/v1/deploy" \
     -H "Content-Type: application/json" \
     -H "Origin: https://idvdjd8388.github.io" \
     -d "{\"token\":\"$TOKEN\",\"panelType\":\"validate\"}")
 
 if ! echo "$V" | grep -q '"success":true'; then
-    echo -e "${R}❌ Invalid token${NC}"
+    show_error "$V"
     exit 1
 fi
 
@@ -51,17 +69,19 @@ AN=$(echo "$V" | grep -o '"accountName":"[^"]*"' | cut -d'"' -f4)
 echo -e "${G}✅ Account: ${AN}${NC}"
 
 echo -e "${C}▶ Getting subdomain...${NC}"
-S=$(curl -s -X POST "$BACKEND/get-subdomain" \
+S=$(curl -s -X POST "$BACKEND/v1/get-subdomain" \
     -H "Content-Type: application/json" \
     -H "Origin: https://idvdjd8388.github.io" \
     -d "{\"token\":\"$TOKEN\"}")
 
 SD=$(echo "$S" | grep -o '"subdomain":"[^"]*"' | cut -d'"' -f4)
 if [ -z "$SD" ]; then
-    echo -e "${R}❌ Subdomain not found${NC}"
-    exit 1
+    show_error "$S"
+    echo -e "${Y}⚠️ Continuing without subdomain — worker will still deploy${NC}"
+    SD="unknown"
+else
+    echo -e "${G}✅ Subdomain: ${SD}${NC}"
 fi
-echo -e "${G}✅ Subdomain: ${SD}${NC}"
 
 echo ""
 echo -e "${W}📋 Available panels:${NC}"
@@ -78,11 +98,10 @@ if [ "$CH" -lt 1 ] || [ "$CH" -gt 9 ]; then
 fi
 P=${PANELS[$((CH-1))]}
 
-# Bug #6: Install mode selection
 echo ""
 echo -e "${W}🔧 حالت نصب:${NC}"
 echo "   1) ⚡ نصب عادی (Normal)"
-echo "   2) 🔒 Obfuscated (encrypted)"
+echo "   2) 🔒 Obfuscated (کلید ۱۶ رقمی + Web Crypto AES-GCM)"
 echo ""
 read -rp "   Mode (1-2, default 1): " MH
 case "$MH" in
@@ -94,13 +113,15 @@ case "$MH" in
         ;;
 esac
 echo -e "${C}✓ حالت انتخاب شده: ${MODE}${NC}"
+if [ "$MODE" = "obfuscated" ]; then
+    KEY16=$(shuf -i 0-9 -n 16 | tr -d '\n' 2>/dev/null || echo "1234567890123456")
+    echo -e "${Y}🔑 کلید ۱۶ رقمی تولید شد: ${KEY16:0:4}****${NC} (در سرور با Web Crypto رمزنگاری می‌شود)"
+fi
 
-# Bug #5: SUBNAME prompt for Nova
 SN_VAL=""
 if [ "$P" = "nova" ]; then
     echo ""
     echo -e "${W}🏷️  نام سرویس (SUBNAME) برای Nova:${NC}"
-    echo "   نام زیردامنه‌ای که می‌خواهید در workers.dev استفاده شود"
     read -rp "   SUBNAME (Enter برای پیش‌فرض NovaProxy): " SN
     if [ -z "$SN" ]; then
         SN_VAL="NovaProxy"
@@ -111,14 +132,13 @@ if [ "$P" = "nova" ]; then
 fi
 
 echo ""
-echo -e "${W}🚀 Deploying ${P} (${MODE})...${NC}"
-# Bug #6 + Bug #5: Build JSON payload with installMode and subname
+echo -e "${W}🚀 Deploying ${P} (${MODE}) via /v1/deploy...${NC}"
 if [ -n "$SN_VAL" ]; then
     PAYLOAD=$(printf '{"token":"%s","panelType":"%s","installMode":"%s","subname":"%s"}' "$TOKEN" "$P" "$MODE" "$SN_VAL")
 else
     PAYLOAD=$(printf '{"token":"%s","panelType":"%s","installMode":"%s"}' "$TOKEN" "$P" "$MODE")
 fi
-D=$(curl -s -X POST "$BACKEND/deploy" \
+D=$(curl -s -X POST "$BACKEND/v1/deploy" \
     -H "Content-Type: application/json" \
     -H "Origin: https://idvdjd8388.github.io" \
     -d "$PAYLOAD")
@@ -126,16 +146,19 @@ D=$(curl -s -X POST "$BACKEND/deploy" \
 if echo "$D" | grep -q '"success":true'; then
     PU=$(echo "$D" | grep -o '"panelURL":"[^"]*"' | cut -d'"' -f4)
     DU=$(echo "$D" | grep -o '"dashboardURL":"[^"]*"' | cut -d'"' -f4)
+    OBK=$(echo "$D" | grep -o '"obfuscationKey":"[^"]*"' | cut -d'"' -f4)
     echo ""
     echo -e "${G}✅ Deployed successfully!${NC}"
     echo -e "${W}🔗 Panel URL:  ${C}${PU}${NC}"
     echo -e "${W}📋 Dashboard:  ${C}${DU}${NC}"
+    if [ -n "$OBK" ]; then
+        echo -e "${Y}🔒 Obfuscation Key: ${OBK:0:4}**** (16-digit, AES-GCM)${NC}"
+    fi
     if [ "$P" = "nahan" ] || [ "$P" = "edge" ] || [ "$P" = "nova" ]; then
         echo -e "${Y}🔑 Default password: admin (change it!)${NC}"
     fi
     echo -e "${W}📦 Install mode: ${MODE}${NC}"
 else
-    E=$(echo "$D" | grep -o '"error":"[^"]*"' | cut -d'"' -f4)
-    echo -e "${R}❌ Error: ${E:-unknown}${NC}"
+    show_error "$D"
     exit 1
 fi

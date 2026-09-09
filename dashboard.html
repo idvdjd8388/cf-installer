@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>داشبورد مدیریت — CF Installer v7</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#000;--bg2:#0a0a0a;--bg3:#111;--bg4:#1a1a1a;--text:#f0f0f5;--text2:#999;--text3:#666;--blue:#3b82f6;--blue2:#2563eb;--red:#ef4444;--green:#22c55e;--border:rgba(255,255,255,.1);--border2:rgba(255,255,255,.05);--radius:12px;--radius2:16px}
+*{box-sizing:border-box;margin:0;padding:0}
+html{font-size:15px}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+[data-theme="light"]{--bg:#f5f6fa;--bg2:#fff;--bg3:#eef0f5;--bg4:#e2e5ed;--text:#1a1a2e;--text2:#555570;--border:rgba(0,0,0,.06);--border2:rgba(0,0,0,.08)}
+.container{max-width:900px;margin:0 auto;padding:20px 16px 80px}
+.header{display:flex;justify-content:space-between;align-items:center;padding:24px 0;border-bottom:1px solid var(--border);margin-bottom:20px}
+.logo{font-size:1.6rem;font-weight:900;background:linear-gradient(135deg,#fff,#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.btn{height:42px;padding:0 18px;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg3);color:var(--text);font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:.2s}
+.btn-primary{background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff;border:none}
+.btn-danger{background:rgba(239,68,68,.1);color:var(--red);border-color:rgba(239,68,68,.2)}
+.btn-danger:hover{background:var(--red);color:#fff}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);padding:20px;margin-bottom:16px}
+.form-input{width:100%;height:48px;background:var(--bg3);border:2px solid var(--border2);border-radius:var(--radius);padding:0 14px;color:var(--text);outline:none}
+.form-input:focus{border-color:var(--blue)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.worker-card{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);padding:16px;display:flex;flex-direction:column;gap:10px;transition:.2s}
+.worker-card:hover{border-color:var(--border);transform:translateY(-2px)}
+.badge{padding:2px 8px;border-radius:9999px;font-size:.65rem;font-weight:700;border:1px solid var(--border2)}
+.alert{padding:12px 16px;border-radius:var(--radius);font-size:.82rem;margin-top:12px}
+.alert-error{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.15);color:var(--red)}
+.alert-success{background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.15);color:var(--green)}
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-80px);background:var(--bg3);border:1px solid var(--border);padding:10px 18px;border-radius:var(--radius);transition:.3s;opacity:0}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.theme-toggle{position:fixed;top:14px;left:14px;width:40px;height:40px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center}
+@media(max-width:640px){.header{flex-direction:column;gap:12px}.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<button class="theme-toggle" id="themeToggle">🌙</button>
+<div class="container">
+  <div class="header">
+    <div>
+      <div class="logo">CF INSTALLER — DASHBOARD</div>
+      <div style="color:var(--text2);font-size:.82rem;margin-top:4px">مدیریت ورکرها • API v1 • v7.0.0</div>
+    </div>
+    <a href="index.html" class="btn">🏠 صفحه نصب</a>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-bottom:8px">🔑 توکن Cloudflare</h3>
+    <p style="color:var(--text2);font-size:.82rem;margin-bottom:12px">توکن <code>cfut_...</code> را وارد کنید تا لیست ورکرها بارگذاری شود (از <code>/v1/list-workers</code>)</p>
+    <div style="display:flex;gap:10px">
+      <input type="password" id="tokenIn" class="form-input" placeholder="cfut_xxxxxxxxxxxxxxxx" style="flex:1;direction:ltr;text-align:left">
+      <button class="btn btn-primary" id="loadBtn">📋 بارگذاری</button>
+    </div>
+    <div id="tokenMsg"></div>
+  </div>
+
+  <div id="stats" class="card" style="display:none">
+    <div style="display:flex;gap:16px;flex-wrap:wrap">
+      <div><strong id="count">0</strong> <span style="color:var(--text2)">ورکر</span></div>
+      <div><span style="color:var(--text2)">ساب‌دامین:</span> <strong id="subdomain">-</strong></div>
+    </div>
+  </div>
+
+  <div id="grid" class="grid"></div>
+  <div id="empty" class="card" style="display:none;text-align:center;color:var(--text2)">ورکری یافت نشد</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const BACKEND='https://cf-installer-backend.cf-installer.workers.dev';
+const $=id=>document.getElementById(id);
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function applyTheme(t){document.documentElement.setAttribute('data-theme',t);$('themeToggle').textContent=t==='light'?'🌙':'☀️'}
+applyTheme(localStorage.getItem('cf-installer-theme')||'dark');
+$('themeToggle').onclick=()=>{const c=document.documentElement.getAttribute('data-theme')||'dark';const n=c==='dark'?'light':'dark';localStorage.setItem('cf-installer-theme',n);applyTheme(n);}
+
+let workers=[]; let tokenVal='';
+
+$('loadBtn').onclick=async()=>{
+  const token=$('tokenIn').value.trim();
+  if(!token||!token.startsWith('cfut_')){$('tokenMsg').innerHTML='<div class="alert alert-error">فرمت توکن نامعتبر</div>';return}
+  tokenVal=token;
+  $('loadBtn').textContent='⏳...'; $('loadBtn').disabled=true;
+  try{
+    const r=await fetch(BACKEND+'/v1/list-workers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token})});
+    const d=await r.json();
+    if(!d.success){
+      const cat=d.category||'SERVER_ERROR', code=d.code||'UNKNOWN';
+      $('tokenMsg').innerHTML=`<div class="alert alert-error">❌ ${esc(d.error||'خطا')}<br><small>${code} / ${cat}</small></div>`;
+      $('grid').innerHTML=''; $('stats').style.display='none';
+    } else {
+      workers=d.workers||[];
+      $('tokenMsg').innerHTML=`<div class="alert alert-success">✅ ${workers.length} ورکر یافت شد</div>`;
+      $('count').textContent=workers.length;
+      $('subdomain').textContent=d.subdomain||'-';
+      $('stats').style.display='block';
+      renderGrid();
+    }
+  }catch(e){ $('tokenMsg').innerHTML=`<div class="alert alert-error">❌ ${esc(e.message)}</div>`}
+  $('loadBtn').textContent='📋 بارگذاری'; $('loadBtn').disabled=false;
+};
+
+function renderGrid(){
+  const g=$('grid'); g.innerHTML='';
+  if(!workers.length){$('empty').style.display='block';return}
+  $('empty').style.display='none';
+  workers.forEach(w=>{
+    const card=document.createElement('div');
+    card.className='worker-card';
+    card.innerHTML=`
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="font-weight:800">${esc(w.panelIcon||'⚙️')} ${esc(w.name)}</div>
+        <span class="badge">${esc(w.panelType)}</span>
+      </div>
+      <div style="color:var(--text2);font-size:.78rem">${esc(w.panelName||w.desc||'')}</div>
+      ${w.url?`<a href="${esc(w.url)}" target="_blank" style="color:#06b6d4;font-size:.82rem;word-break:break-all;direction:ltr;text-align:left">${esc(w.url)}</a>`:''}
+      <div style="display:flex;gap:8px;margin-top:6px">
+        ${w.url?`<a href="${esc(w.url)}" target="_blank" class="btn" style="flex:1;justify-content:center;text-decoration:none">🔗 باز کردن</a>`:''}
+        <button class="btn" onclick="copyUrl('${esc(w.url||'')}')">📋 کپی</button>
+        <button class="btn btn-danger" onclick="deleteWorker('${esc(w.name)}')">🗑️ حذف</button>
+      </div>
+    `;
+    g.appendChild(card);
+  });
+}
+
+function copyUrl(u){ if(!u) return; navigator.clipboard.writeText(u).then(()=>toast('✅ کپی شد')) }
+
+async function deleteWorker(name){
+  if(!confirm(`⚠️ Worker "${name}" حذف شود؟ این عمل قابل بازگشت نیست!`)) return;
+  if(!tokenVal){ toast('⚠️ ابتدا توکن را وارد کنید'); return; }
+  toast('⏳ در حال حذف...');
+  try{
+    const r=await fetch(BACKEND+'/v1/delete-worker',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:tokenVal,workerName:name})});
+    const d=await r.json();
+    if(d.success){
+      toast('✅ حذف شد');
+      workers=workers.filter(w=>w.name!==name);
+      $('count').textContent=workers.length;
+      renderGrid();
+    } else {
+      toast(`❌ ${d.error||'خطا'} [${d.code||''}/${d.category||''}]`);
+    }
+  }catch(e){ toast('❌ '+e.message)}
+}
+</script>
+</body>
+</html>

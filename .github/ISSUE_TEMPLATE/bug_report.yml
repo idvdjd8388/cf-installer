@@ -1,0 +1,66 @@
+name: "🐛 گزارش باگ — Bug Report"
+description: "گزارش یک باگ برای کمک به بهبود CF Installer"
+title: "[Bug]: "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: "## پیش از گزارش\nلطفاً بررسی کنید Issue تکراری وجود ندارد و از نسخه‌ی آخر (main) استفاده می‌کنید."
+  - type: input
+    id: version
+    attributes:
+      label: "نسخه (Version)"
+      description: "مثلاً v6.0.2 یا commit hash"
+      placeholder: "v6.0.2"
+    validations:
+      required: true
+  - type: dropdown
+    id: component
+    attributes:
+      label: "بخش آسیب‌دیده"
+      options:
+        - "worker-backend.js (/deploy, /list-workers, ...)"
+        - "index.html (فرانت‌اند)"
+        - "bot.js (ربات تلگرام)"
+        - "install.sh (CLI)"
+        - "dashboard.html"
+        - "دیگر"
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: "شرح باگ"
+      description: "چه اتفاقی افتاد؟ چه انتظاری داشتید؟"
+      placeholder: "وقتی روی 'نصب' کلیک می‌کنم..."
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: "گام‌های بازتولید"
+      description: "1. برو به ... 2. کلیک کن ..."
+      placeholder: "1. توکن cfut_... وارد کردم\n2. پنل Nova انتخاب کردم"
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: "لاگ / اسکرین‌شات"
+      description: "لاگ deploy یا کنسول مرورگر را اینجا بچسبانید (توکن را حذف کنید!)"
+      render: shell
+  - type: input
+    id: env
+    attributes:
+      label: "محیط"
+      description: "مرورگر/Node/OS"
+      placeholder: "Chrome 126, Node 20, Ubuntu 22.04"
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: "بررسی‌ها"
+      options:
+        - label: "در نسخه‌ی آخر تست کردم"
+          required: true
+        - label: "توکن/اطلاعات حساس را حذف کردم"
+          required: true

@@ -6,7 +6,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<title>CF Installer v6.0.1</title>
+<title>CF Installer v7.0.0</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#000">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -297,7 +297,7 @@ body::after{
   <header class="header">
     <div class="logo">CF INSTALLER</div>
     <div class="logo-sub">نصب‌کننده خودکار پنل‌های Cloudflare Worker</div>
-    <div class="logo-ver">v6.0.1</div>
+    <div class="logo-ver">v7.0.0 • API v1</div>
     <a href="https://t.me/Cf_Arshia_Bot" target="_blank" class="btn btn-secondary btn-sm" style="margin-top:14px;text-decoration:none">🤖 ربات تلگرام</a>
   </header>
   <div id="content"></div>
@@ -505,7 +505,7 @@ function render(){
     $('validateBtn').textContent='⏳ در حال بررسی...';$('validateBtn').disabled=true;
     if(!token.startsWith('cfut_')){$('tokenResult').innerHTML='<div class="alert alert-error" style="margin-top:12px">❌ فرمت توکن نامعتبر است. توکن باید با cfut_ شروع شود</div>';$('validateBtn').textContent='🔍 بررسی توکن';$('validateBtn').disabled=false;return}
     try{
-      const r=await fetch(BACKEND+'/deploy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token,panelType:'validate'})});
+      const r=await fetch(BACKEND+'/v1/deploy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token,panelType:'validate'})});
       const d=await r.json();
       if(d.success){
         $('tokenResult').innerHTML='<div class="alert alert-success" style="margin-top:12px">✅ توکن معتبر است!</div>';
@@ -514,7 +514,7 @@ function render(){
         if(d.accountId)deployState.accountId=d.accountId;deployState.token=token;
         // Get subdomain from user email
         try{
-          const subRes=await fetch(BACKEND+'/get-subdomain',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token})});
+          const subRes=await fetch(BACKEND+'/v1/get-subdomain',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token})});
           const subData=await subRes.json();
           if(subData.success&&subData.subdomain){
             deployState.subdomain=subData.subdomain;
@@ -522,14 +522,14 @@ function render(){
         }catch(e){}
         // Fetch worker list
         try{
-          const wlRes=await fetch(BACKEND+'/list-workers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token})});
+          const wlRes=await fetch(BACKEND+'/v1/list-workers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token})});
           const wlData=await wlRes.json();
           if(wlData.success&&wlData.workers&&wlData.workers.length){
             renderWorkerList(wlData.workers);
           }
         }catch(e){}
       } else {
-        $('tokenResult').innerHTML=`<div class="alert alert-error" style="margin-top:12px">❌ ${esc(d.error||'خطا')}</div>`;
+        $('tokenResult').innerHTML=`<div class="alert alert-error" style="margin-top:12px">❌ ${esc(categorizeError(d).msg)}</div>`;
       }
     }catch(e){$('tokenResult').innerHTML=`<div class="alert alert-error" style="margin-top:12px">❌ ${esc(e.message)}</div>`}
     $('validateBtn').textContent='🔍 بررسی توکن';$('validateBtn').disabled=false;
@@ -571,7 +571,7 @@ function setInstallMode(mode){
     if(cfg&&cfg.pages) payload.pages=true;
 
     try{
-      const r=await fetch(BACKEND+'/deploy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+      const r=await fetch(BACKEND+'/v1/deploy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
       const d=await r.json();
       
       // Show logs
@@ -605,7 +605,7 @@ function setInstallMode(mode){
         $('deleteBtn').onclick=async function(){
           if(!confirm('⚠️ Worker "'+d.workerName+'" حذف شود؟'))return;
           this.disabled=true;this.textContent='⏳ در حال حذف...';
-          try{const r=await fetch(BACKEND+'/cf',{method:'POST',headers:{'Authorization':'Bearer '+deployState.token,'Content-Type':'application/json','X-CF-Path':'/accounts/'+deployState.accountId+'/workers/scripts/'+d.workerName,'X-CF-Method':'DELETE'}});const j=await r.json();
+          try{const r=await fetch(BACKEND+'/v1/delete-worker',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:deployState.token,workerName:d.workerName,accountId:deployState.accountId})});const j=await r.json();
           if(j.success){toast('✅ حذف شد!');location.reload()}else{toast('❌ خطا');this.disabled=false;this.textContent='🗑️ حذف Worker'}}catch(e){toast('❌ '+e.message);this.disabled=false;this.textContent='🗑️ حذف Worker'}};
         $('newInstallBtn').onclick=function(){render()};
         $('testConnBtn').onclick=function(){testConnection(this,d.panelURL||$('resUrlInput').value,d.workerName,'deployTestResult')};
@@ -715,7 +715,7 @@ function setInstallMode(mode){
         deployState.panelPath=d.panelPath;
         deployState.uuid=d.uuid||null;
       } else {
-        $('deployLog').innerHTML+=`<br><span class="log-err">❌ ${esc(d.error||'خطا')}</span>`;
+        $('deployLog').innerHTML+=`<br><span class="log-err">❌ ${esc(categorizeError(d).msg)}</span>`;
         toast('❌ نصب ناموفق');
       }
     }catch(e){
@@ -748,12 +748,49 @@ function updatePanelVars(panel){
 }
 
 
-// Obfuscate code for nova panel
+// Enhanced Obfuscation: 16-digit key + Web Crypto AES-GCM + fallback obfuscator
+function generateObfuscationKey(){
+  let k=''; for(let i=0;i<16;i++) k+=Math.floor(Math.random()*10);
+  return k;
+}
+async function encryptWithWebCrypto(code, key16){
+  const enc=new TextEncoder(), dec=new TextDecoder();
+  const salt=enc.encode('cf-installer-obfuscation-salt');
+  const km=await crypto.subtle.importKey('raw', enc.encode(key16), {name:'PBKDF2'}, false, ['deriveKey']);
+  const aes=await crypto.subtle.deriveKey({name:'PBKDF2', salt, iterations:1000, hash:'SHA-256'}, km, {name:'AES-GCM', length:256}, false, ['encrypt']);
+  const iv=crypto.getRandomValues(new Uint8Array(12));
+  const buf=await crypto.subtle.encrypt({name:'AES-GCM', iv}, aes, enc.encode(code));
+  const b64=btoa(String.fromCharCode(...new Uint8Array(buf)));
+  const ivB64=btoa(String.fromCharCode(...iv));
+  const wrapper=`(async()=>{const k="${key16}";const ivB64="${ivB64}";const dataB64="${b64}";const enc=new TextEncoder(),dec=new TextDecoder();const salt=enc.encode('cf-installer-obfuscation-salt');const km=await crypto.subtle.importKey('raw',enc.encode(k),{name:'PBKDF2'},false,['deriveKey']);const aes=await crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:1000,hash:'SHA-256'},km,{name:'AES-GCM',length:256},false,['decrypt']);const iv=Uint8Array.from(atob(ivB64),c=>c.charCodeAt(0));const data=Uint8Array.from(atob(dataB64),c=>c.charCodeAt(0));const buf=await crypto.subtle.decrypt({name:'AES-GCM',iv},aes,data);const code=dec.decode(buf);return (0,eval)(code);})();`;
+  return wrapper;
+}
+function categorizeError(d){
+  if(!d) return {msg:'خطای ناشناخته', code:'UNKNOWN', category:'SERVER_ERROR'};
+  return {msg:d.error||d.message||'خطا', code:d.code||'UNKNOWN', category:d.category||'SERVER_ERROR'};
+}
+function showCategorizedError(d){
+  const c=categorizeError(d);
+  let html=`<div class="alert alert-error">❌ ${esc(c.msg)}<br><small style="opacity:.7">Code: ${c.code} | Category: ${c.category}</small>`;
+  if(c.category==='AUTH_ERROR') html+=`<br><small>→ توکن را با دسترسی‌های لازم دوباره بسازید</small>`;
+  else if(c.category==='RATE_LIMIT_ERROR') html+=`<br><small>→ محدودیت نرخ — کمی صبر کنید</small>`;
+  else if(c.category==='QUOTA_ERROR') html+=`<br><small>→ سقف Worker پر شده</small>`;
+  html+=`</div>`;
+  return html;
+}
+// Obfuscate code for nova panel (enhanced)
 async function obfuscateJS(code){
+  const key=generateObfuscationKey();
+  try{
+    // Try Web Crypto first for nova/edge/nahan
+    const encrypted=await encryptWithWebCrypto(code, key);
+    console.log('🔒 Web Crypto obfuscation key:', key.slice(0,4)+'****');
+    return encrypted;
+  }catch(e){ console.warn('Web Crypto failed:',e); }
   if(typeof JavaScriptObfuscator==='undefined'){console.warn('obfuscator not loaded');return code}
   try{
     const result=JavaScriptObfuscator.obfuscate(code,{compact:true,controlFlowFlattening:true,controlFlowFlatteningThreshold:0.5,deadCodeInjection:true,deadCodeInjectionThreshold:0.2,stringArray:true,stringArrayEncoding:['base64'],stringArrayThreshold:0.75,renameGlobals:false,selfDefending:false,debugProtection:false});
-    return result.getObfuscatedCode();
+    return result.getObfuscatedCode()+"\n// key:"+key;
   }catch(e){console.warn('obfuscate failed:',e);return code}
 }
 function minifyJS(code){
@@ -766,7 +803,7 @@ async function deleteWorker(){
   if(!confirm('⚠️ آیا مطمئن هستید که می\u200cخواهید Worker "\u200f'+deployState.workerName+'\u200f" را حذف کنید?\n\nاین عمل قابل بازگشت نیست!'))return;
   toast('⏳ در حال حذف...');
   try{
-    const r=await fetch(BACKEND+'/cf',{method:'POST',headers:{'Authorization':'Bearer '+deployState.token,'Content-Type':'application/json','X-CF-Path':'/accounts/'+deployState.accountId+'/workers/scripts/'+deployState.workerName,'X-CF-Method':'DELETE'}});
+    const r=await fetch(BACKEND+'/v1/cf',{method:'POST',headers:{'Authorization':'Bearer '+deployState.token,'Content-Type':'application/json','X-CF-Path':'/accounts/'+deployState.accountId+'/workers/scripts/'+deployState.workerName,'X-CF-Method':'DELETE'}});
     const d=await r.json();
     if(d.success){
       toast('✅ Worker حذف شد!');
@@ -792,7 +829,7 @@ async function updateWorker(){
     dl.innerHTML+='<br><span class="log-info">▸ دانلود کد جدید...</span>';setProgress(40,'دانلود کد جدید...');
     const branch=repoCfg.release||'main';
     const srcUrl='https://raw.githubusercontent.com/'+repoCfg.repo+'/'+branch+'/'+repoCfg.file;
-    const srcR=await fetch(BACKEND+'/github',{method:'POST',headers:{'Content-Type':'application/json','X-GitHub-Url':srcUrl}});
+    const srcR=await fetch(BACKEND+'/v1/github',{method:'POST',headers:{'Content-Type':'application/json','X-GitHub-Url':srcUrl}});
     let srcText=await srcR.text();
     if(!srcR.ok||srcText.includes('Not Found')||srcText.includes('404'))throw new Error('کد منبع یافت نشد');
     dl.innerHTML+='<br><span class="log-ok">✅ کد دانلود شد: '+(srcText.length/1024).toFixed(0)+'KB</span>';
@@ -803,7 +840,7 @@ async function updateWorker(){
     }
     // Step 2: Get current worker metadata
     dl.innerHTML+='<br><span class="log-info">▸ دریافت متادیتای فعلی...</span>';
-    const metaR=await fetch(BACKEND+'/cf',{method:'POST',headers:{'Authorization':'Bearer '+deployState.token,'Content-Type':'application/json','X-CF-Path':'/accounts/'+deployState.accountId+'/workers/scripts/'+deployState.workerName,'X-CF-Method':'GET'}});
+    const metaR=await fetch(BACKEND+'/v1/cf',{method:'POST',headers:{'Authorization':'Bearer '+deployState.token,'Content-Type':'application/json','X-CF-Path':'/accounts/'+deployState.accountId+'/workers/scripts/'+deployState.workerName,'X-CF-Method':'GET'}});
     const metaD=await metaR.json();
     let bindings=[];
     if(metaD.success&&metaD.result){
@@ -818,7 +855,7 @@ async function updateWorker(){
     const fd=new FormData();
     fd.append('metadata',new Blob([JSON.stringify(metadata)],{type:'application/json'}));
     fd.append('worker.js',new Blob([srcText],{type:'application/javascript+module'}),'worker.js');
-    const putR=await fetch(BACKEND+'/cf',{method:'POST',headers:{'Authorization':'Bearer '+deployState.token,'X-CF-Path':'/accounts/'+deployState.accountId+'/workers/scripts/'+deployState.workerName,'X-CF-Method':'PUT'},body:fd});
+    const putR=await fetch(BACKEND+'/v1/cf',{method:'POST',headers:{'Authorization':'Bearer '+deployState.token,'X-CF-Path':'/accounts/'+deployState.accountId+'/workers/scripts/'+deployState.workerName,'X-CF-Method':'PUT'},body:fd});
     const putD=await putR.json();
     if(!putD.success)throw new Error('خطا در آپدیت: '+(putD.errors?.[0]?.message||'unknown'));
     dl.innerHTML+='<br><span class="log-ok">✅ Worker بروزرسانی شد!</span>';
@@ -870,7 +907,7 @@ async function quickDelete(name){
   if(!confirm('⚠️ Worker "'+name+'" حذف شود؟'))return;
   toast('⏳ در حال حذف...');
   try{
-    const r=await fetch(BACKEND+'/cf',{method:'POST',headers:{'Authorization':'Bearer '+deployState.token,'Content-Type':'application/json','X-CF-Path':'/accounts/'+deployState.accountId+'/workers/scripts/'+name,'X-CF-Method':'DELETE'}});
+    const r=await fetch(BACKEND+'/v1/delete-worker',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:deployState.token,workerName:name,accountId:deployState.accountId})});
     const d=await r.json();
     if(d.success){toast('✅ حذف شد!');document.getElementById('workerListCard')?.remove();location.reload();}
     else toast('❌ خطا: '+(d.errors?.[0]?.message||'حذف ناموفق'));
@@ -885,7 +922,7 @@ async function quickUpdate(name,panelType){
   try{
     const branch=repoCfg.release||'main';
     const srcUrl='https://raw.githubusercontent.com/'+repoCfg.repo+'/'+branch+'/'+repoCfg.file;
-    const srcR=await fetch(BACKEND+'/github',{method:'POST',headers:{'Content-Type':'application/json','X-GitHub-Url':srcUrl}});
+    const srcR=await fetch(BACKEND+'/v1/github',{method:'POST',headers:{'Content-Type':'application/json','X-GitHub-Url':srcUrl}});
     let srcText=await srcR.text();
     if(!srcR.ok||srcText.includes('404'))throw new Error('کد منبع یافت نشد');
     // Obfuscate if obfuscated mode
@@ -895,7 +932,7 @@ async function quickUpdate(name,panelType){
       else srcText=minifyJS(srcText);
       toast('🔒 processed: '+(origSize/1024).toFixed(0)+'KB → '+(srcText.length/1024).toFixed(0)+'KB');
     }
-    const metaR=await fetch(BACKEND+'/cf',{method:'POST',headers:{'Authorization':'Bearer '+deployState.token,'Content-Type':'application/json','X-CF-Path':'/accounts/'+deployState.accountId+'/workers/scripts/'+name,'X-CF-Method':'GET'}});
+    const metaR=await fetch(BACKEND+'/v1/cf',{method:'POST',headers:{'Authorization':'Bearer '+deployState.token,'Content-Type':'application/json','X-CF-Path':'/accounts/'+deployState.accountId+'/workers/scripts/'+name,'X-CF-Method':'GET'}});
     const metaD=await metaR.json();
     let bindings=[];
     if(metaD.success&&metaD.result)bindings=metaD.result.bindings||[];
@@ -903,7 +940,7 @@ async function quickUpdate(name,panelType){
     const fd=new FormData();
     fd.append('metadata',new Blob([JSON.stringify(metadata)],{type:'application/json'}));
     fd.append('worker.js',new Blob([srcText],{type:'application/javascript+module'}),'worker.js');
-    const putR=await fetch(BACKEND+'/cf',{method:'POST',headers:{'Authorization':'Bearer '+deployState.token,'X-CF-Path':'/accounts/'+deployState.accountId+'/workers/scripts/'+name,'X-CF-Method':'PUT'},body:fd});
+    const putR=await fetch(BACKEND+'/v1/cf',{method:'POST',headers:{'Authorization':'Bearer '+deployState.token,'X-CF-Path':'/accounts/'+deployState.accountId+'/workers/scripts/'+name,'X-CF-Method':'PUT'},body:fd});
     const putD=await putR.json();
     if(!putD.success)throw new Error('خطا در آپدیت');
     toast('✅ آپدیت کامل شد!');

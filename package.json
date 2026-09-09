@@ -1,0 +1,20 @@
+{
+  "name": "cf-installer",
+  "version": "7.0.0",
+  "description": "Cloudflare Panel Installer - Nahan/Edge/Cfnew/Nova with API v1, Web Crypto obfuscation, dashboard",
+  "type": "module",
+  "scripts": {
+    "test": "vitest --run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest --coverage --run",
+    "dev": "wrangler dev --local",
+    "deploy": "wrangler deploy",
+    "deploy:backend": "wrangler deploy worker-backend.js",
+    "deploy:bot": "wrangler deploy bot.js"
+  },
+  "devDependencies": {
+    "vitest": "^1.6.0",
+    "wrangler": "^3.80.0"
+  },
+  "dependencies": {}
+}

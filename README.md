@@ -26,6 +26,7 @@
 - [شروع سریع](#-شروع-سریع)
 - [ساخت توکن Cloudflare](#-ساخت-توکن-cloudflare)
 - [ساختار فایل‌ها](#-ساختار-فایلها)
+- [راهنمای CLI](#-راهنمای-cli-installsh)
 - [API v1](#-api-v1)
 - [داشبورد مدیریت](#-داشبورد-مدیریت)
 - [Obfuscation پیشرفته](#-obfuscation-پیشرفته)
@@ -91,12 +92,13 @@
 ۴. برای Nova فیلد `SUBNAME` را پر کنید (پیش‌فرض `NovaProxy`)
 ۵. **نصب و فعال‌سازی** → لینک پنل و داشبورد نمایش داده می‌شود
 
-### ۲) حالت CLI
+### ۲) حالت CLI — ترمینال
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/idvdjd8388/cf-installer/main/install.sh | bash
-# → انتخاب پنل ۱-۹ → حالت نصب → SUBNAME (برای Nova) → دیپلوی
 ```
+
+> جزئیات کامل، خطاها و حالت Obfuscated را در [راهنمای CLI](#-راهنمای-cli-installsh) ببینید.
 
 ### ۳) ربات تلگرام
 
@@ -138,13 +140,107 @@ curl -fsSL https://raw.githubusercontent.com/idvdjd8388/cf-installer/main/instal
 | `dashboard.html` | داشبورد مدیریت ورکرها (`/v1/list-workers` + حذف) |
 | `worker-backend.js` | بک‌اند Worker — تمام APIهای `/v1/*` + Obfuscation + دسته‌بندی خطا |
 | `bot.js` | ربات تلگرام (D1, حالت نصب تعاملی) |
-| `install.sh` | اسکریپت CLI (v7, API v1, نمایش کد خطا) |
+| `install.sh` | اسکریپت CLI — تعاملی + Obfuscated + دسته‌بندی خطا (→ [راهنمای CLI](#-راهنمای-cli-installsh)) |
 | `sw.js` | Service Worker `v9` — کش هوشمند + PWA |
 | `manifest.json` | مانیفست PWA |
 | `wrangler.toml` | تنظیمات Wrangler (`cf-installer-bot`) |
 | `docker-compose.yml` + `nginx.conf` | محیط لوکال |
 | `package.json` + `vitest.config.js` | تست و اسکریپت‌ها |
 | `tests/worker-backend.test.js` | ۱۱ تست واحد |
+
+---
+
+## 💻 راهنمای CLI (`install.sh`)
+
+اسکریپت `install.sh` نسخه ترمینالی نصب‌کننده است — بدون مرورگر، مستقیم روی **Linux / macOS / Termux / WSL**.
+
+### پیش‌نیازها
+
+| نیاز | بررسی |
+|------|-------|
+| `curl` | `curl --version` — در غیر اینصورت `pkg install curl` یا `apt install curl` |
+| `bash` | `bash --version` |
+| توکن `cfut_...` | از https://dash.cloudflare.com/profile/api-tokens |
+
+### اجرای سریع
+
+```bash
+# روش ۱: یک‌خطی (پیشنهادی)
+curl -fsSL https://raw.githubusercontent.com/idvdjd8388/cf-installer/main/install.sh | bash
+
+# روش ۲: دانلود و اجرا
+wget https://raw.githubusercontent.com/idvdjd8388/cf-installer/main/install.sh
+chmod +x install.sh
+./install.sh
+```
+
+### جریان تعاملی
+
+```
+🔥 CF Installer v7.0.0
+🔑 توکن را وارد کنید: cfut_xxx...
+▶ Validating account... ✅ Account: example@mail.com
+▶ Getting subdomain... ✅ Subdomain: example
+📋 Available panels: 1) Nahan 2) EdgeTunnel ... 9) v2ray-worker
+   Panel (1-9): 7          → Nova
+🔧 حالت نصب: 1) عادی  2) Obfuscated → 2
+🔑 کلید ۱۶ رقمی تولید شد: 4821**** (در سرور با Web Crypto رمزنگاری می‌شود)
+🏷️ SUBNAME برای Nova: my-sub  (Enter → NovaProxy)
+🚀 Deploying nova (obfuscated) via /v1/deploy...
+✅ Deployed successfully!
+🔗 Panel URL:  https://srv-a1b2c3.example.workers.dev/admin
+📋 Dashboard:  https://dash.cloudflare.com/xxxxx/workers-and-pages
+🔒 Obfuscation Key: 4821**** (16-digit, AES-GCM)
+🔑 Default password: admin
+```
+
+### حالت‌ها
+
+| حالت | توضیح |
+|------|-------|
+| `1` — نصب عادی | کد بدون رمزنگاری — سریع‌تر |
+| `2` — Obfuscated | کلید ۱۶ رقمی تصادفی + AES-GCM با Web Crypto در `worker-backend.js` — کلید در پاسخ نمایش داده می‌شود |
+
+### SUBNAME (فقط Nova)
+
+برای Nova از شما `SUBNAME` پرسیده می‌شود — نام ساب‌دامنه `workers.dev`. خالی بگذارید → `NovaProxy`.
+
+### مدیریت خطا (v7)
+
+هر خطا با `Code / Category` نمایش داده می‌شود:
+
+```
+❌ Error: توکن نامعتبر: Authentication error
+   Code: AUTH_FAILED
+   Category: AUTH_ERROR
+   → توکن را با دسترسی‌های لازم دوباره بسازید
+```
+
+| Category | اقدام |
+|----------|-------|
+| `AUTH_ERROR` | توکن را با دسترسی‌های جدول بالا دوباره بسازید |
+| `RATE_LIMIT_ERROR` | ۱–۲ دقیقه صبر کنید |
+| `QUOTA_ERROR` | از `dashboard.html` یک Worker حذف کنید |
+
+### اجرای غیرتعاملی (اتوماسیون)
+
+```bash
+# پایپ توکن (برای CI)
+echo "cfut_xxx" | bash install.sh
+# یا
+printf "cfut_xxx\n7\n2\nmy-sub\n" | bash install.sh
+```
+
+> **امنیت:** توکن را هرگز در تاریخچه شل یا لاگ CI نمایش ندهید — از `read -s` یا متغیر محیطی استفاده کنید.
+
+### عیب‌یابی CLI
+
+| مشکل | راه‌حل |
+|------|--------|
+| `curl not installed` | `pkg install curl` (Termux) یا `sudo apt install curl` |
+| `Invalid token` | توکن باید با `cfut_` شروع شود |
+| `Subdomain not found` | اسکریپت ادامه می‌دهد — آدرس از داشبورد CF قابل مشاهده است |
+| `308 Redirect` | طبیعی است — اسکریپت از `/v1/deploy` استفاده می‌کند |
 
 ---
 

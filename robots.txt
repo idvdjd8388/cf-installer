@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://idvdjd8388.github.io/cf-installer/sitemap.xml

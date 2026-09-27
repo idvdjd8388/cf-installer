@@ -20,6 +20,11 @@ if ! command -v curl &>/dev/null; then
     exit 1
 fi
 
+# Fix for curl|bash: read from /dev/tty when stdin is not a terminal
+if [ ! -t 0 ]; then
+    exec </dev/tty
+fi
+
 TOKEN_URL="https://dash.cloudflare.com/profile/api-tokens?permissionGroupKeys=%5B%7B%22key%22%3A%22workers_scripts%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22workers_kv_storage%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22d1%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22workers_settings%22%2C%22type%22%3A%22read%22%7D%2C%7B%22key%22%3A%22user_details%22%2C%22type%22%3A%22read%22%7D%5D&accountId=*&zoneId=all&name=CF-Installer"
 echo ""
 echo -e "${W}📝 Create an API token:${NC}"

@@ -134,9 +134,16 @@ fi
 echo ""
 echo -e "${W}🚀 Deploying ${P} (${MODE}) via /v1/deploy...${NC}"
 if [ -n "$SN_VAL" ]; then
-    PAYLOAD=$(printf '{"token":"%s","panelType":"%s","installMode":"%s","subname":"%s"}' "$TOKEN" "$P" "$MODE" "$SN_VAL")
+    PAYLOAD=$(printf '{"token":"%s","panelType":"%s","installMode":"%s","subname":"%s"}' \
+        "$(echo "$TOKEN" | sed 's/"/\\"/g')" \
+        "$(echo "$P" | sed 's/"/\\"/g')" \
+        "$(echo "$MODE" | sed 's/"/\\"/g')" \
+        "$(echo "$SN_VAL" | sed 's/"/\\"/g')")
 else
-    PAYLOAD=$(printf '{"token":"%s","panelType":"%s","installMode":"%s"}' "$TOKEN" "$P" "$MODE")
+    PAYLOAD=$(printf '{"token":"%s","panelType":"%s","installMode":"%s"}' \
+        "$(echo "$TOKEN" | sed 's/"/\\"/g')" \
+        "$(echo "$P" | sed 's/"/\\"/g')" \
+        "$(echo "$MODE" | sed 's/"/\\"/g')")
 fi
 D=$(curl -s -X POST "$BACKEND/v1/deploy" \
     -H "Content-Type: application/json" \

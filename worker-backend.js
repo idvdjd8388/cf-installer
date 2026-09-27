@@ -2,7 +2,7 @@ export default {
   async fetch(request) {
     const ALLOWED=['arshiyashams675-sudo.github.io','idvdjd8388.github.io','localhost','127.0.0.1'];
     const origin=request.headers.get('Origin')||request.headers.get('Referer')||'';
-    const isAllowed=ALLOWED.some(o=>origin.includes(o));
+    const isAllowed=ALLOWED.some(o=>origin===o||origin===('https://'+o)||origin===('http://'+o));
     const corsHeaders={'Access-Control-Allow-Origin':isAllowed?origin:'','Access-Control-Allow-Methods':'GET,POST,PUT,DELETE,OPTIONS','Access-Control-Allow-Headers':'Content-Type,Authorization,X-CF-Path,X-CF-Method,X-GitHub-Url','Access-Control-Expose-Headers':'Location,X-API-Deprecated'};
     if(request.method==='OPTIONS') return new Response(null,{status:204,headers:corsHeaders});
     const url=new URL(request.url);
@@ -96,7 +96,7 @@ export default {
         const acc=accountId?ar.result.find(a=>a.id===accountId):ar.result[0];
         if(!acc) return R({success:false,logs,error:'حساب یافت نشد',code:'ACCOUNT_NOT_FOUND',category:'NOT_FOUND_ERROR'},200,corsHeaders);
         const aid=acc.id;
-        log(`حساب: ${acc.name||aid}`);
+        log(`حساب: ${escH(acc.name||aid)}`);
 
         if(panelType==='validate'){
           return R({success:true,logs,accountName:acc.name,accountId:aid},200,corsHeaders);
@@ -118,8 +118,8 @@ export default {
               sub=await resolveSubdomain(h, aid, scriptsPost);
             }
           }
-        }catch(e){log(`خطا ساب‌دامین: ${e.message}`)}
-        log(`ساب‌دامین نهایی: ${sub||'یافت نشد'}`);
+        }catch(e){log(`خطا ساب‌دامین: ${escH(e.message)}`)}
+        log(`ساب‌دامین نهایی: ${escH(sub||'یافت نشد')}`);
 
         log('دانلود کد منبع...');
         const panels={
@@ -170,7 +170,7 @@ export default {
             obfuscationKey=res.key;
             log(`🔒 رمزگذاری انجام شد ✅ کلید: ${obfuscationKey.slice(0,4)}****`);
           }catch(e){
-            err(`رمزگذاری پیشرفته ناموفق: ${e.message}`);
+            err(`رمزگذاری پیشرفته ناموفق: ${escH(e.message)}`);
             try{
               const {obfuscate}=await import('https://cdn.jsdelivr.net/npm/javascript-obfuscator@4.1.1/+esm');
               finalCode=await obfuscate(finalCode,{compact:true,controlFlowFlattening:true,controlFlowFlatteningThreshold:0.5,deadCodeInjection:true,deadCodeInjectionThreshold:0.2,stringArray:true,stringArrayEncoding:['base64'],stringArrayThreshold:0.75,renameGlobals:false});
@@ -187,7 +187,7 @@ export default {
           log(`ساخت D1: ${name}...`);
           const r=await cfDirect(h,`/accounts/${aid}/d1/database`,'POST',{name:`d1-${rnd}`});
           if(r.success){bindings.push({name,type:'d1',id:r.result.uuid});log(`D1 OK: ${r.result.uuid.slice(0,8)}...`)}
-          else{const cat=classifyCFError(r);err(`D1 خطا [${cat.code}]: ${cat.message}`)}
+          else{const cat=classifyCFError(r);err(`D1 خطا [${escH(cat.code)}]: ${escH(cat.message)}`)}
         }
         for(const name of(p.bindings.kv||[])){
           log(`ساخت KV: ${name}...`);
@@ -198,12 +198,12 @@ export default {
             id=r.result?.id;
           }
           if(id){bindings.push({name,type:'kv_namespace',namespace_id:id});log(`KV OK: ${id.slice(0,8)}...`)}
-          else{const cat=classifyCFError(lr);err(`KV خطا [${cat.code}]: ${cat.message}`)}
+          else{const cat=classifyCFError(lr);err(`KV خطا [${escH(cat.code)}]: ${escH(cat.message)}`)}
         }
 
         const subname=body.subname;
         if(panelType==='nova' && subname){
-          log(`تنظیم SUBNAME برای Nova: ${subname}`);
+          log(`تنظیم SUBNAME برای Nova: ${escH(subname)}`);
           p.vars.SUBNAME=subname;
         }
 
@@ -246,7 +246,7 @@ export default {
               sub=await resolveSubdomain(h, aid, scriptsPost);
             }
             if(!sub) sub=await resolveSubdomain(h, aid);
-          }catch(e){log(`subdomain fetch error: ${e.message}`)}
+          }catch(e){log(`subdomain fetch error: ${escH(e.message)}`)}
         }
         if(!sub){
           log('⚠️ ساب‌دامین شناسایی نشد — Worker مستقر شد ولی آدرس workers.dev قابل شناسایی نیست');
@@ -257,7 +257,7 @@ export default {
         const panelPath=p.path||(vars.u?`/${vars.u}`:'');
         const panelURL=basePath+panelPath;
         const dashboardURL=`https://dash.cloudflare.com/${aid}/workers-and-pages`;
-        log(`آدرس: ${panelURL}`);
+        log(`آدرس: ${escH(panelURL)}`);
 
         let vtpUUID=null;
         if(panelType==='vtpanel'){
@@ -409,6 +409,7 @@ export default {
 function R(d,s=200,cors={}){
   return new Response(JSON.stringify(d),{status:s,headers:{'Content-Type':'application/json','Access-Control-Allow-Origin':cors['Access-Control-Allow-Origin']||'',...cors}});
 }
+function escH(str){return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
 
 function classifyCFError(cfRes){
   const err=cfRes?.errors?.[0];
@@ -513,8 +514,8 @@ async function resolveSubdomain(h,aid,preFetchedScripts=null){
 
 // Enhanced obfuscation with 16-digit key + Web Crypto AES-GCM
 function generateObfuscationKey(){
-  let k=''; for(let i=0;i<16;i++) k+=Math.floor(Math.random()*10);
-  return k;
+  const arr=new Uint8Array(16);crypto.getRandomValues(arr);
+  return Array.from(arr,b=>b%10).join('');
 }
 
 async function enhancedObfuscate(code){

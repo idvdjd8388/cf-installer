@@ -11,6 +11,7 @@ export default {
       return new Response(JSON.stringify(d), { headers: { 'Content-Type': 'application/json' } });
     }
     if (url.pathname === '/webhook' && request.method === 'POST') {
+      if(env.BOT_SECRET && request.headers.get('X-Telegram-Bot-Api-Secret-Token') !== env.BOT_SECRET) return new Response('forbidden',{status:403});
       const update = await request.json();
       try { await handleUpdate(update, env); } catch (e) { console.error('Update error:', e); }
       return new Response('ok');
@@ -34,8 +35,8 @@ const PANELS = [
 
 // Enhanced obfuscation helpers (16-digit key + Web Crypto)
 function generateObfuscationKey(){
-  let k=''; for(let i=0;i<16;i++) k+=Math.floor(Math.random()*10);
-  return k;
+  const arr=new Uint8Array(16);crypto.getRandomValues(arr);
+  return Array.from(arr,b=>b%10).join('');
 }
 function formatCFError(d){
   if(!d) return 'خطای ناشناخته';
@@ -253,11 +254,27 @@ async function updateUserState(chatId, state, env) {
   await env.DB.prepare('UPDATE users SET state = ? WHERE chat_id = ?').bind(state, chatId).run();
 }
 async function sendMsg(chatId, text, env, extra = {}) {
-  if (text.length > 4000) text = text.substring(0, 4000) + '\n\n...';
-  const body = { chat_id: chatId, text, parse_mode: 'Markdown', ...extra };
-  await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
-    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
-  });
+  const MAX=4000;
+  if (text.length <= MAX) {
+    const body = { chat_id: chatId, text, parse_mode: 'Markdown', ...extra };
+    await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+    });
+  } else {
+    let remaining = text;
+    while (remaining.length > 0) {
+      let chunk = remaining.substring(0, MAX);
+      if (remaining.length > MAX) {
+        const lastNewline = chunk.lastIndexOf('\n');
+        if (lastNewline > MAX / 2) chunk = remaining.substring(0, lastNewline);
+      }
+      remaining = remaining.substring(chunk.length).replace(/^\n/, '');
+      const body = { chat_id: chatId, text: chunk, parse_mode: 'Markdown', ...extra };
+      await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+      });
+    }
+  }
 }
 async function answerCb(cbId, env) {
   await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/answerCallbackQuery`, {

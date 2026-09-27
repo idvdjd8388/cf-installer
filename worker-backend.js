@@ -154,7 +154,7 @@ export default {
           bpbSecurePath=genStr(14); p.path=`/${bpbSecurePath}/panel`; bpbTrPass=genStr(16); bpbUUID=crypto.randomUUID();
           let accEmail=''; try{const ur=await cfDirect(h,'/user');if(ur.success)accEmail=ur.result?.email||''}catch(e){}
           const mainDomain=sub?`${workerName}.${sub}.workers.dev`:`${workerName}.${(accEmail.split('@')[0]||'user')}.workers.dev`;
-          const embeddedSettings=`const EMBEDED_SETTINGS = ${JSON.stringify({accID:aid,accEmail,apiToken:token,vlUUID:bpbUUID,trPass:bpbTrPass,securePath:bpbSecurePath,proxyIpMode:'proxyip',proxyIPs:[],prefixes:[],fallback:'',dohUrl:'',mainDomain})} ;\n`;
+          const embeddedSettings=`const EMBEDED_SETTINGS = ${JSON.stringify({accID:aid,accEmail,vlUUID:bpbUUID,trPass:bpbTrPass,securePath:bpbSecurePath,proxyIpMode:'proxyip',proxyIPs:[],prefixes:[],fallback:'',dohUrl:'',mainDomain})} ;\n`;
           let rc='';for(let i=0;i<200;i++)rc+=`var _${crypto.randomUUID().slice(0,8)}=${Math.floor(Math.random()*100)};\n`;
           finalCode='// @ts-nocheck\n'+rc+embeddedSettings+code;
           log(`securePath: ${bpbSecurePath}`); log('تنظیمات BPB ساخته شد ✅');

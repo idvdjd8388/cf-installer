@@ -30,17 +30,15 @@ echo ""
 echo -e "   ${Y}${TOKEN_URL}${NC}"
 echo ""
 echo -e "${W}🔑 Cloudflare API Token:${NC}"
-echo -e "   (توکن رو کپی کنید و اینجا بزنید)"
-echo ""
-read -rp "   ▶ " TOKEN
+read -rp "   > " TOKEN
 
 if [ -z "$TOKEN" ]; then
-    echo -e "${R}❌ توکنی وارد نشد. لطفاً توکن رو وارد کنید.${NC}"
+    echo -e "${R}❌ No token entered. Please enter your token.${NC}"
     exit 1
 fi
 
 if [[ ! "$TOKEN" == cfut_* ]]; then
-    echo -e "${R}❌ فرمت توکن نامعتبر است — باید با cfut_ شروع بشه${NC}"
+    echo -e "${R}❌ Invalid token format — must start with cfut_${NC}"
     exit 1
 fi
 
@@ -53,11 +51,11 @@ show_error() {
     [ -n "$code" ] && echo -e "   ${Y}Code: $code${NC}"
     [ -n "$cat" ] && echo -e "   ${Y}Category: $cat${NC}"
     if [ "$cat" = "AUTH_ERROR" ]; then
-        echo -e "   ${C}→ توکن را با دسترسی‌های لازم دوباره بسازید${NC}"
+        echo -e "   ${C}→ Recreate token with required permissions${NC}"
     elif [ "$cat" = "RATE_LIMIT_ERROR" ]; then
-        echo -e "   ${C}→ محدودیت نرخ — چند دقیقه صبر کنید${NC}"
+        echo -e "   ${C}→ Rate limited — wait a few minutes${NC}"
     elif [ "$cat" = "QUOTA_ERROR" ]; then
-        echo -e "   ${C}→ سقف Worker پر شده — یکی را حذف کنید${NC}"
+        echo -e "   ${C}→ Worker limit reached — delete one first${NC}"
     fi
 }
 
@@ -100,7 +98,7 @@ read -rp "   Panel (1-9): " CH
 
 # Validate numeric input
 if ! [[ "$CH" =~ ^[0-9]+$ ]]; then
-    echo -e "${R}❌ لطفاً یک عدد وارد کنید${NC}"
+    echo -e "${R}❌ Please enter a number${NC}"
     exit 1
 fi
 
@@ -112,9 +110,9 @@ fi
 P=${PANELS[$((CH-1))]}
 
 echo ""
-echo -e "${W}🔧 حالت نصب:${NC}"
-echo "   1) ⚡ نصب عادی (Normal)"
-echo "   2) 🔒 Obfuscated (کلید ۱۶ رقمی + Web Crypto AES-GCM)"
+echo -e "${W}🔧 Install mode:${NC}"
+echo "   1) ⚡ Normal install"
+echo "   2) 🔒 Obfuscated (16-digit key + Web Crypto AES-GCM)"
 echo ""
 read -rp "   Mode (1-2, default 1): " MH
 case "$MH" in
@@ -125,17 +123,17 @@ case "$MH" in
         MODE="normal"
         ;;
 esac
-echo -e "${C}✓ حالت انتخاب شده: ${MODE}${NC}"
+echo -e "${C}✓ Selected mode: ${MODE}${NC}"
 if [ "$MODE" = "obfuscated" ]; then
     KEY16=$(shuf -i 0-9 -n 16 | tr -d '\n' 2>/dev/null || head -c 16 /dev/urandom | od -An -tx1 | tr -d ' \n' | head -c 16)
-    echo -e "${Y}🔑 کلید ۱۶ رقمی تولید شد: ${KEY16:0:4}****${NC} (در سرور با Web Crypto رمزنگاری می‌شود)"
+    echo -e "${Y}🔑 16-digit key generated: ${KEY16:0:4}****${NC} (encrypted on server with Web Crypto)"
 fi
 
 SN_VAL=""
 if [ "$P" = "nova" ]; then
     echo ""
-    echo -e "${W}🏷️  نام سرویس (SUBNAME) برای Nova:${NC}"
-    read -rp "   SUBNAME (Enter برای پیش‌فرض NovaProxy): " SN
+    echo -e "${W}🏷️  SUBNAME for Nova:${NC}"
+    read -rp "   SUBNAME (Enter for default NovaProxy): " SN
     if [ -z "$SN" ]; then
         SN_VAL="NovaProxy"
     else

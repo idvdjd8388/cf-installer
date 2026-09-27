@@ -91,6 +91,12 @@ echo "  7) Nova        8) AMCF         9) v2ray-worker"
 echo ""
 read -rp "   Panel (1-9): " CH
 
+# Validate numeric input
+if ! [[ "$CH" =~ ^[0-9]+$ ]]; then
+    echo -e "${R}❌ لطفاً یک عدد وارد کنید${NC}"
+    exit 1
+fi
+
 PANELS=("nahan" "edge" "cfnew" "edgtun" "fox" "vtpanel" "nova" "amcf" "v2ray-worker")
 if [ "$CH" -lt 1 ] || [ "$CH" -gt 9 ]; then
     echo -e "${R}❌ Invalid choice${NC}"
@@ -114,7 +120,7 @@ case "$MH" in
 esac
 echo -e "${C}✓ حالت انتخاب شده: ${MODE}${NC}"
 if [ "$MODE" = "obfuscated" ]; then
-    KEY16=$(shuf -i 0-9 -n 16 | tr -d '\n' 2>/dev/null || echo "1234567890123456")
+    KEY16=$(shuf -i 0-9 -n 16 | tr -d '\n' 2>/dev/null || head -c 16 /dev/urandom | od -An -tx1 | tr -d ' \n' | head -c 16)
     echo -e "${Y}🔑 کلید ۱۶ رقمی تولید شد: ${KEY16:0:4}****${NC} (در سرور با Web Crypto رمزنگاری می‌شود)"
 fi
 
@@ -133,18 +139,20 @@ fi
 
 echo ""
 echo -e "${W}🚀 Deploying ${P} (${MODE}) via /v1/deploy...${NC}"
+
+# Build JSON payload safely using heredoc
 if [ -n "$SN_VAL" ]; then
-    PAYLOAD=$(printf '{"token":"%s","panelType":"%s","installMode":"%s","subname":"%s"}' \
-        "$(echo "$TOKEN" | sed 's/"/\\"/g')" \
-        "$(echo "$P" | sed 's/"/\\"/g')" \
-        "$(echo "$MODE" | sed 's/"/\\"/g')" \
-        "$(echo "$SN_VAL" | sed 's/"/\\"/g')")
+    PAYLOAD=$(cat <<EOF
+{"token":"${TOKEN}","panelType":"${P}","installMode":"${MODE}","subname":"${SN_VAL}"}
+EOF
+)
 else
-    PAYLOAD=$(printf '{"token":"%s","panelType":"%s","installMode":"%s"}' \
-        "$(echo "$TOKEN" | sed 's/"/\\"/g')" \
-        "$(echo "$P" | sed 's/"/\\"/g')" \
-        "$(echo "$MODE" | sed 's/"/\\"/g')")
+    PAYLOAD=$(cat <<EOF
+{"token":"${TOKEN}","panelType":"${P}","installMode":"${MODE}"}
+EOF
+)
 fi
+
 D=$(curl -s -X POST "$BACKEND/v1/deploy" \
     -H "Content-Type: application/json" \
     -H "Origin: https://idvdjd8388.github.io" \

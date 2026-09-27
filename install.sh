@@ -30,10 +30,17 @@ echo ""
 echo -e "   ${Y}${TOKEN_URL}${NC}"
 echo ""
 echo -e "${W}🔑 Cloudflare API Token:${NC}"
-read -rp "   " TOKEN
+echo -e "   (توکن رو کپی کنید و اینجا بزنید)"
+echo ""
+read -rp "   ▶ " TOKEN
 
-if [ -z "$TOKEN" ] || [[ ! "$TOKEN" == cfut_* ]]; then
-    echo -e "${R}❌ Invalid token — must start with cfut_${NC}"
+if [ -z "$TOKEN" ]; then
+    echo -e "${R}❌ توکنی وارد نشد. لطفاً توکن رو وارد کنید.${NC}"
+    exit 1
+fi
+
+if [[ ! "$TOKEN" == cfut_* ]]; then
+    echo -e "${R}❌ فرمت توکن نامعتبر است — باید با cfut_ شروع بشه${NC}"
     exit 1
 fi
 

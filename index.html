@@ -70,7 +70,7 @@ body::after{
 .btn-secondary:hover{background:var(--bg3);border-color:var(--border3)}
 
 .btn-sm{height:38px;padding:0 16px;font-size:.76rem;border-radius:8px}
-.btn-group{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:14px}.btn-group .btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 12px;font-size:.8rem;border-radius:var(--radius);text-align:center;text-decoration:none;gap:6px}@media(min-width:480px){.btn-group{grid-template-columns:repeat(3,1fr)}}@media(min-width:768px){.btn-group{grid-template-columns:repeat(5,1fr)}}
+.btn-group{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:14px}.btn-group .btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 12px;font-size:.8rem;border-radius:var(--radius);text-align:center;text-decoration:none;gap:6px}@media(min-width:480px){.btn-group{grid-template-columns:repeat(3,1fr)}}@media(min-width:768px){.btn-group{grid-template-columns:repeat(3,1fr)}}
 /* Install mode selector */
 .install-modes{display:flex;gap:10px;margin:16px 0}
 .mode-btn{flex:1;height:48px;border:none;border-radius:var(--radius);font-size:.85rem;font-weight:700;cursor:pointer;transition:all .25s;display:flex;align-items:center;justify-content:center;gap:8px;position:relative;overflow:hidden}
@@ -238,7 +238,7 @@ body::after{
 [data-theme="light"] .mode-btn:not(.active):active{background:rgba(0,184,130,.05);transform:scale(0.97)}
 
 /* Theme Toggle */
-.theme-toggle{position:fixed;top:16px;left:16px;width:40px;height:40px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);color:var(--text);font-size:1.1rem;cursor:pointer;z-index:100;display:flex;align-items:center;justify-content:center;transition:all .3s}
+.theme-toggle{position:fixed;top:16px;right:16px;width:40px;height:40px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);color:var(--text);font-size:1.1rem;cursor:pointer;z-index:100;display:flex;align-items:center;justify-content:center;transition:all .3s}
 .theme-toggle:hover{background:var(--bg4);transform:scale(1.1)}
 
 /* Connection Test */
@@ -467,6 +467,7 @@ function render(){
           <button class="btn" id="testConnBtn" style="border:1px solid var(--green);background:rgba(34,197,94,.08);color:var(--green)">🟢 تست اتصال</button>
           <a id="dashLink" href="https://dash.cloudflare.com" target="_blank" class="btn" style="border:1px solid var(--border2);color:var(--text2);text-decoration:none">📋 داشبورد CF</a>
           <button class="btn" id="deleteBtn" style="border:1px solid rgba(239,68,68,.3);background:rgba(239,68,68,.06);color:var(--red)">🗑️ حذف Worker</button>
+          <button class="btn" id="updateBtn" style="border:1px solid rgba(59,130,246,.3);background:rgba(59,130,246,.06);color:var(--blue)">🔄 بروزرسانی</button>
           <button class="btn" id="newInstallBtn" style="border:1px solid var(--border2);color:var(--text2)">➕ نصب جدید</button>
         </div>
         <div class="test-result" id="deployTestResult" style="margin-top:10px"></div>
@@ -585,7 +586,7 @@ function setInstallMode(mode){
             if(l.includes('اعتبارسنجی توکن')||l.includes('حساب'))setProgress(20,'دریافت اطلاعات حساب...');
             if(l.includes('دانلود کد')||l.includes('کد دانلود'))setProgress(40,'دانلود کد پنل...');
             if(l.includes('استقرار Worker'))setProgress(80,'استقرار Worker...');
-            if(l.includes('مستقر شد')){setProgress(100,'نصب موفق ✅');[1,2,3].forEach(j=>{const e=$('step'+j);if(e){e.classList.remove('active');e.classList.add('done')}})}
+            if(l.includes('مستقر شد')){setProgress(100,'نصب موفق ✅')}
             i++;
             setTimeout(showNextLog,400);
           }
@@ -608,6 +609,7 @@ function setInstallMode(mode){
           this.disabled=true;this.textContent='⏳ در حال حذف...';
           try{const r=await fetch(BACKEND+'/v1/delete-worker',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:deployState.token,workerName:d.workerName,accountId:deployState.accountId})});const j=await r.json();
           if(j.success){toast('✅ حذف شد!');location.reload()}else{toast('❌ خطا');this.disabled=false;this.textContent='🗑️ حذف Worker'}}catch(e){toast('❌ '+e.message);this.disabled=false;this.textContent='🗑️ حذف Worker'}};
+        $('updateBtn').onclick=function(){updateWorker()};
         $('newInstallBtn').onclick=function(){render()};
         $('testConnBtn').onclick=function(){testConnection(this,d.panelURL||$('resUrlInput').value,d.workerName,'deployTestResult')};
         // Update dashboard link
@@ -952,6 +954,7 @@ async function quickUpdate(name,panelType){
 
 function _getTestEl(btn,url,name,tid){
   let el=tid?document.getElementById(tid):null;
+  if(!el)el=document.getElementById('deployTestResult');
   if(!el){const card=btn.closest('.result-box');if(card)el=card.querySelector('.test-result')}
   return el;
 }
@@ -996,43 +999,11 @@ function attachManageButtons(){
   if(ub)ub.addEventListener('click',updateWorker);
 }
 
-// Connection Test
-function testConnection(){
-  const url=$('resUrlInput')?.value||deployState.panelURL;
-  if(!url){toast('⚠️ آدرس Worker موجود نیست');return}
-  const el=$('testResult');
-  if(!el)return;
-  el.className='test-result show testing';
-  el.innerHTML='<span class="spinner"></span> 🔄 در حال تست...';
-  const t0=performance.now();
-  fetch(url,{redirect:'follow'}).then(()=>{
-    return fetch(url,{redirect:'follow'}).then(r=>{
-      const ms=Math.round(performance.now()-t0);
-      if(r.ok||r.status===302){
-        el.className='test-result show active';
-        el.innerHTML='🟢 Worker فعاله ✅<span class="test-time">'+ms+'ms</span>';
-      }else{
-        el.className='test-result show inactive';
-        el.innerHTML='🔴 Worker غیرفعاله ❌<span class="test-time">HTTP '+esc(String(r.status))+'</span>';
-      }
-    });
-  }).catch(()=>{
-    const ms=Math.round(performance.now()-t0);
-    if(ms<8000){
-      el.className='test-result show active';
-      el.innerHTML='🟢 Worker فعاله ✅<span class="test-time">'+ms+'ms</span>';
-    }else{
-      el.className='test-result show error';
-      el.innerHTML='⚠️ خطا در اتصال<span class="test-time">'+ms+'ms</span>';
-    }
-  });
-}
-
 // Speed Test
 async function speedTest(){
   const url=$('resUrlInput')?.value||deployState.panelURL;
   if(!url){toast('⚠️ آدرس Worker موجود نیست');return}
-  const el=$('testResult');if(!el)return;
+  const el=$('deployTestResult');if(!el)return;
   el.className='test-result show testing';
   el.innerHTML='<span class="spinner"></span> ⚡ در حال تست سرعت...';
 

@@ -28,7 +28,8 @@ services:
     ports:
       - "8789:8789"
     command: >
-      sh -c "npx wrangler dev bot.js --local --port 8789 --host 0.0.0.0 --compatibility-date 2024-09-22 --compatibility-flags nodejs_compat"
+      sh -c "npm install &&
+             npx wrangler dev bot.js --local --port 8789 --host 0.0.0.0 --compatibility-date 2024-09-22 --compatibility-flags nodejs_compat"
     depends_on:
       - wrangler-backend
     restart: unless-stopped
@@ -41,7 +42,10 @@ services:
       - "8080:80"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - .:/usr/share/nginx/html:ro
+      - ./index.html:/usr/share/nginx/html/index.html:ro
+      - ./dashboard.html:/usr/share/nginx/html/dashboard.html:ro
+      - ./manifest.json:/usr/share/nginx/html/manifest.json:ro
+      - ./sw.js:/usr/share/nginx/html/sw.js:ro
     depends_on:
       - wrangler-backend
       - wrangler-bot

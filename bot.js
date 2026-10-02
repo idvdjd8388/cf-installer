@@ -33,11 +33,6 @@ const PANELS = [
   { key: 'v2ray', name: 'v2ray-worker', icon: '🐸' }
 ];
 
-// Enhanced obfuscation helpers (16-digit key + Web Crypto)
-function generateObfuscationKey(){
-  const arr=new Uint8Array(16);crypto.getRandomValues(arr);
-  return Array.from(arr,b=>b%10).join('');
-}
 function formatCFError(d){
   if(!d) return 'خطای ناشناخته';
   if(d.code || d.category) return `${d.error||d.message||'خطا'} [${d.code||''} / ${d.category||''}]`;
@@ -108,8 +103,7 @@ async function handleCallback(cb, env) {
     if (data.startsWith('mode:')) {
       const mode = data.split(':')[1];
       if (mode==='obfuscated') {
-        const key=generateObfuscationKey();
-        await sendMsg(chatId, `🔒 حالت Obfuscated انتخاب شد\n🔑 کلید ۱۶ رقمی: \`${key.slice(0,4)}****\` \n(رمزنگاری با Web Crypto AES-GCM در سرور انجام می‌شود)`, env);
+        await sendMsg(chatId, `🔒 حالت Obfuscated انتخاب شد\n(رمزنگاری با Web Crypto AES-GCM در سرور انجام می‌شود)\nکلید ۱۶ رقمی پس از نصب نمایش داده می‌شود`, env);
       }
       if (panelType === 'nova') {
         await updateUserState(chatId, `waiting_subname:${mode}`, env);
@@ -165,12 +159,7 @@ async function sendDeployFlow(chatId, env) {
 async function deployPanel(chatId, panelType, mode, subName, env) {
   const user = await getUser(chatId, env);
   if (!user || !user.cf_token) return sendMsg(chatId, '⚠️ توکن یافت نشد. با /token دوباره تنظیم کنید.', env);
-  let obKeyLog='';
-  if(mode==='obfuscated') {
-    const k=generateObfuscationKey();
-    obKeyLog=`\n🔑 کلید ۱۶ رقمی: \`${k.slice(0,4)}****\` (Web Crypto)`;
-  }
-  await sendMsg(chatId, `⏳ در حال نصب ${panelType} (${mode})...${obKeyLog}`, env);
+  await sendMsg(chatId, `⏳ در حال نصب ${panelType} (${mode})...`, env);
   await updateUserState(chatId, null, env);
   try {
     const payload = { token: user.cf_token, panelType, installMode: mode };

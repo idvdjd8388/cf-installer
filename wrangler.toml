@@ -4,7 +4,7 @@ compatibility_date = "2024-09-22"
 compatibility_flags = ["nodejs_compat"]
 
 [[d1_databases]]
-binding = "D1"
+binding = "DB"
 database_name = "cf-installer-bot-db"
 database_id = "b1d70518-f70c-4732-90cb-dcfcd6e11f9e"
 

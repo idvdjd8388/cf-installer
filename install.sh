@@ -130,8 +130,8 @@ case "$MH" in
 esac
 echo -e "${C}✓ Selected mode: ${MODE}${NC}"
 if [ "$MODE" = "obfuscated" ]; then
-    KEY16=$(shuf -i 0-9 -n 16 | tr -d '\n' 2>/dev/null || head -c 16 /dev/urandom | od -An -tx1 | tr -d ' \n' | head -c 16)
-    echo -e "${Y}🔑 16-digit key generated: ${KEY16:0:4}****${NC} (encrypted on server with Web Crypto)"
+    echo -e "${Y}🔒 رمزنگاری با Web Crypto AES-GCM در سرور انجام می‌شود${NC}"
+    echo -e "${Y}🔑 کلید ۱۶ رقمی پس از نصب نمایش داده می‌شود${NC}"
 fi
 
 SN_VAL=""

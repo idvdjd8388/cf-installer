@@ -65,8 +65,7 @@ export default {
       }catch(e){return R(classifyError(e,'NETWORK_ERROR'),502,corsHeaders)}
     }
 
-    if((url.pathname==='/v1/deploy' || url.pathname==='/deploy') && request.method==='POST'){
-      // Handle both versioned and legacy (if redirected not followed)
+    if(url.pathname==='/v1/deploy' && request.method==='POST'){
       try{
         const body=await request.json();
         const {token,accountId,panelType}=body;
@@ -145,24 +144,11 @@ export default {
         if(!code) return R({success:false,logs,error:'کد منبع یافت نشد',code:'SOURCE_NOT_FOUND',category:'NOT_FOUND_ERROR'},200,corsHeaders);
         log(`کد دانلود شد: ${(code.length/1024).toFixed(0)}KB`);
 
-        let bpbSecurePath=''; let bpbTrPass=''; let bpbUUID='';
         let finalCode=code;
-        if(panelType==='bpb'){
-          log('ساخت تنظیمات BPB...');
-          const chars='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
-          const genStr=(len)=>{let s='';for(let i=0;i<len;i++)s+=chars[Math.floor(Math.random()*chars.length)];return s};
-          bpbSecurePath=genStr(14); p.path=`/${bpbSecurePath}/panel`; bpbTrPass=genStr(16); bpbUUID=crypto.randomUUID();
-          let accEmail=''; try{const ur=await cfDirect(h,'/user');if(ur.success)accEmail=ur.result?.email||''}catch(e){}
-          const mainDomain=sub?`${workerName}.${sub}.workers.dev`:`${workerName}.${(accEmail.split('@')[0]||'user')}.workers.dev`;
-          const embeddedSettings=`const EMBEDED_SETTINGS = ${JSON.stringify({accID:aid,accEmail,vlUUID:bpbUUID,trPass:bpbTrPass,securePath:bpbSecurePath,proxyIpMode:'proxyip',proxyIPs:[],prefixes:[],fallback:'',dohUrl:'',mainDomain})} ;\n`;
-          let rc='';for(let i=0;i<200;i++)rc+=`var _${crypto.randomUUID().slice(0,8)}=${Math.floor(Math.random()*100)};\n`;
-          finalCode='// @ts-nocheck\n'+rc+embeddedSettings+code;
-          log(`securePath: ${bpbSecurePath}`); log('تنظیمات BPB ساخته شد ✅');
-        }
 
         // Enhanced obfuscation: 16-digit key + Web Crypto AES-GCM + javascript-obfuscator fallback
         let obfuscationKey=null;
-        if(installMode==='obfuscated' && ['nova','edge','nahan'].includes(panelType)){
+        if(installMode==='obfuscated' && ['nova','edge','nahan','cfnew','edgtun','fox','amcf'].includes(panelType)){
           try{
             log('🔒 در حال رمزگذاری پیشرفته (Web Crypto + کلید ۱۶ رقمی)...');
             const res=await enhancedObfuscate(finalCode);
@@ -251,7 +237,7 @@ export default {
         if(!sub){
           log('⚠️ ساب‌دامین شناسایی نشد — Worker مستقر شد ولی آدرس workers.dev قابل شناسایی نیست');
           const dashboardURL=`https://dash.cloudflare.com/${aid}/workers-and-pages`;
-          return R({success:true,logs,panelURL:'',workerName,panelType,uuid:vars.u||vars.UUID||vars.ID||null,panelPath:'/',dashboardURL,obfuscationKey},200,corsHeaders);
+          return R({success:false,logs,error:'Worker مستقر شد اما ساب‌دامین شناسایی نشد — از داشبورد Cloudflare بررسی کنید',code:'SUBDOMAIN_NOT_FOUND',category:'NOT_FOUND_ERROR',workerName,panelType,dashboardURL,obfuscationKey},200,corsHeaders);
         }
         const basePath=`https://${workerName}.${sub}.workers.dev`;
         const panelPath=p.path||(vars.u?`/${vars.u}`:'');
@@ -282,7 +268,7 @@ export default {
           }
         }
 
-        return R({success:true,logs,panelURL,workerName,panelType,uuid:vars.u||vars.UUID||vars.ID||vtpUUID||bpbUUID||null,panelPath,dashboardURL,securePath:bpbSecurePath||null,trPass:bpbTrPass||null,subdomain:sub,installMode,obfuscationKey},200,corsHeaders);
+        return R({success:true,logs,panelURL,workerName,panelType,uuid:vars.u||vars.UUID||vars.ID||vtpUUID||null,panelPath,dashboardURL,subdomain:sub,installMode,obfuscationKey},200,corsHeaders);
       }catch(e){const cat=classifyError(e,'SERVER_ERROR'); return R({success:false,logs:[`خطا: ${e.message}`],error:e.message,code:cat.code,category:cat.category},200,corsHeaders)}
     }
 

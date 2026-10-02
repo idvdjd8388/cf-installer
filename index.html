@@ -381,7 +381,7 @@ function render(){
         <a href="https://dash.cloudflare.com/profile/api-tokens?permissionGroupKeys=%5B%7B%22key%22%3A%22workers_scripts%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22workers_kv_storage%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22d1%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22workers_settings%22%2C%22type%22%3A%22read%22%7D%2C%7B%22key%22%3A%22user_details%22%2C%22type%22%3A%22read%22%7D%5D&accountId=*&zoneId=all&name=CF-Installer" target="_blank" class="btn btn-primary btn-sm" style="text-decoration:none">🔑 ساخت توکن</a>
       </div>
       <div class="form-group"><label class="form-label">API Token</label>
-      <input type="password" class="form-input" id="tokenIn" placeholder="cfut_xxxxxxxxxxxxxxxx" autocomplete="off" style="direction:ltr;text-align:left"></div>
+      <input type="password" class="form-input" id="tokenIn" placeholder="Cloudflare API Token" autocomplete="off" style="direction:ltr;text-align:left"></div>
       <button class="btn btn-primary" id="validateBtn">🔍 بررسی توکن</button>
       <div id="tokenResult"></div>
     </div>
@@ -488,7 +488,7 @@ function render(){
     const token=$('tokenIn').value.trim();
     if(!token){toast('⚠️ توکن را وارد کنید');return}
     $('validateBtn').textContent='⏳ در حال بررسی...';$('validateBtn').disabled=true;
-    if(!token.startsWith('cfut_')){$('tokenResult').innerHTML='<div class="alert alert-error" style="margin-top:12px">❌ فرمت توکن نامعتبر است. توکن باید با cfut_ شروع شود</div>';$('validateBtn').textContent='🔍 بررسی توکن';$('validateBtn').disabled=false;return}
+    if(token.length<20){$('tokenResult').innerHTML='<div class="alert alert-error" style="margin-top:12px">❌ توکن نامعتبر — توکن را از dashboard.cloudflare.com بگیرید</div>';$('validateBtn').textContent='🔍 بررسی توکن';$('validateBtn').disabled=false;return}
     try{
       const r=await fetch(BACKEND+'/v1/deploy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token,panelType:'validate'})});
       const d=await r.json();

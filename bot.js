@@ -57,7 +57,7 @@ async function handleUpdate(update, env) {
   }
 
   if (text === '/start') return sendMsg(chatId, `🔥 *CF Installer Bot v7*\n\nیه ابزار ساده برای نصب پنل‌های VPN روی Cloudflare Worker.\n\n📋 *دستورات:*\n/token — تنظیم توکن CF\n/deploy — نصب پنل جدید\n/workers — لیست ورکرها\n/delete — حذف ورکر\n/help — راهنما\n\nAPI v1 • Obfuscation با کلید ۱۶ رقمی`, env);
-  if (text === '/help') return sendMsg(chatId, `📋 *راهنمای استفاده*\n\n۱. اول با /token توکن Cloudflare رو تنظیم کنید\n۲. با /deploy یکی از ۹ پنل رو نصب کنید\n۳. با /workers لیست ورکرهای نصب شده رو ببینید\n۴. با /delete ورکر را حذف کنید\n\n⚠️ توکن باید با cfut_ شروع بشه\n🔑 توکن رو از dashboard.cloudflare.com بگیرید\n🔒 حالت Obfuscated با کلید ۱۶ رقمی و Web Crypto AES-GCM`, env);
+  if (text === '/help') return sendMsg(chatId, `📋 *راهنمای استفاده*\n\n۱. اول با /token توکن Cloudflare رو تنظیم کنید\n۲. با /deploy یکی از ۹ پنل رو نصب کنید\n۳. با /workers لیست ورکرهای نصب شده رو ببینید\n۴. با /delete ورکر را حذف کنید\n\n⚠️ توکن را از dashboard.cloudflare.com بگیرید\n🔑 توکن رو از dashboard.cloudflare.com بگیرید\n🔒 حالت Obfuscated با کلید ۱۶ رقمی و Web Crypto AES-GCM`, env);
   if (text === '/token') return sendTokenFlow(chatId, env);
   if (text === '/deploy') return sendDeployFlow(chatId, env);
   if (text === '/workers') return sendWorkersFlow(chatId, env);
@@ -126,12 +126,12 @@ async function sendTokenFlow(chatId, env) {
   const keyboard = {
     inline_keyboard: [[{ text: '🔑 ساخت توکن CF', url: 'https://dash.cloudflare.com/profile/api-tokens?permissionGroupKeys=%5B%7B%22key%22%3A%22workers_scripts%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22workers_kv_storage%22%2C%22type%22%3A%22edit%22%7D%2C%7B%22key%22%3A%22workers_d1_storage%22%2C%22type%22%3A%22edit%22%7D%5D&accountId=%2A&zoneId=all&name=CF-Installer-Bot' }]]
   };
-  await sendMsg(chatId, '🔑 *تنظیم توکن Cloudflare*\n\nتوکن رو بفرستید (فرمت: cfut_...)', env, keyboard);
+  await sendMsg(chatId, '🔑 *تنظیم توکن Cloudflare*\n\nتوکن رو بفرستید', env, keyboard);
   await updateUserState(chatId, 'waiting_token', env);
 }
 
 async function handleTokenInput(chatId, text, env) {
-  if (!text.startsWith('cfut_')) return sendMsg(chatId, '❌ فرمت توکن نامعتبر. باید با cfut_ شروع بشه.', env);
+  if (text.length < 20) return sendMsg(chatId, '❌ توکن نامعتبر. توکن را از dashboard.cloudflare.com بگیرید.', env);
   try {
     const r = await fetch(`${BACKEND}/v1/deploy`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: text, panelType: 'validate' }) });
     const d = await r.json();

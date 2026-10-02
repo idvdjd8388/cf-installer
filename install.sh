@@ -42,8 +42,8 @@ if [ -z "$TOKEN" ]; then
     exit 1
 fi
 
-if [[ ! "$TOKEN" == cfut_* ]]; then
-    echo -e "${R}❌ Invalid token format — must start with cfut_${NC}"
+if [[ ${#TOKEN} -lt 20 ]]; then
+    echo -e "${R}❌ Token too short — get one from https://dash.cloudflare.com/profile/api-tokens${NC}"
     exit 1
 fi
 

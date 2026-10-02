@@ -69,7 +69,7 @@ export default {
       try{
         const body=await request.json();
         const {token,accountId,panelType}=body;
-        if(!token||!token.startsWith('cfut_')) return R({success:false,error:'فرمت توکن نامعتبر است. توکن باید با cfut_ شروع شود',code:'INVALID_TOKEN_FORMAT',category:'VALIDATION_ERROR'},400,corsHeaders);
+        if(!token||token.length<20) return R({success:false,error:'توکن نامعتبر — توکن را از dashboard.cloudflare.com بگیرید',code:'INVALID_TOKEN_FORMAT',category:'VALIDATION_ERROR'},400,corsHeaders);
         const rnd=Math.random().toString(36).slice(2,8)+Math.floor(Math.random()*1000);
         const workerName=`srv-${rnd}`;
         const logs=[];
@@ -276,7 +276,7 @@ export default {
       try{
         const body=await request.json();
         const {token,accountId}=body;
-        if(!token||!token.startsWith('cfut_')) return R({success:false,error:'فرمت توکن نامعتبر',code:'INVALID_TOKEN_FORMAT',category:'VALIDATION_ERROR'},200,corsHeaders);
+        if(!token||token.length<20) return R({success:false,error:'توکن نامعتبر',code:'INVALID_TOKEN_FORMAT',category:'VALIDATION_ERROR'},200,corsHeaders);
         const h={'Authorization':'Bearer '+token};
         let aid=accountId;
         if(!aid){ const ar=await cfDirect(h,'/accounts'); if(ar.success&&ar.result.length) aid=ar.result[0].id; }
@@ -291,7 +291,7 @@ export default {
       try{
         const body=await request.json();
         const {token}=body;
-        if(!token||!token.startsWith('cfut_')) return R({success:false,error:'توکن نامعتبر',code:'INVALID_TOKEN',category:'AUTH_ERROR'},200,corsHeaders);
+        if(!token||token.length<20) return R({success:false,error:'توکن نامعتبر',code:'INVALID_TOKEN',category:'AUTH_ERROR'},200,corsHeaders);
         const h={'Authorization':'Bearer '+token};
         const ar=await cfDirect(h,'/accounts');
         if(!ar.success||!ar.result.length){ const cat=classifyCFError(ar); return R({success:false,error:'حسابی یافت نشد',code:cat.code,category:cat.category},200,corsHeaders)}
@@ -372,7 +372,7 @@ export default {
       try{
         const body=await request.json();
         const {token,workerName,accountId}=body;
-        if(!token||!token.startsWith('cfut_')) return R({success:false,error:'توکن نامعتبر',code:'INVALID_TOKEN',category:'AUTH_ERROR'},400,corsHeaders);
+        if(!token||token.length<20) return R({success:false,error:'توکن نامعتبر',code:'INVALID_TOKEN',category:'AUTH_ERROR'},400,corsHeaders);
         if(!workerName) return R({success:false,error:'نام Worker الزامی است',code:'MISSING_WORKER_NAME',category:'VALIDATION_ERROR'},400,corsHeaders);
         if(workerName==='cf-installer-bot' || workerName==='cf_installer') return R({success:false,error:'حذف این Worker مجاز نیست',code:'PROTECTED_WORKER',category:'VALIDATION_ERROR'},403,corsHeaders);
         const h={'Authorization':'Bearer '+token};

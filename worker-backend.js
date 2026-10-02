@@ -514,11 +514,22 @@ async function enhancedObfuscate(code){
   const aesKey=await crypto.subtle.deriveKey({name:'PBKDF2', salt, iterations:1000, hash:'SHA-256'}, keyMaterial, {name:'AES-GCM', length:256}, false, ['encrypt','decrypt']);
   const iv=crypto.getRandomValues(new Uint8Array(12));
   const encrypted=await crypto.subtle.encrypt({name:'AES-GCM', iv}, aesKey, enc.encode(code));
-  const b64= btoa(String.fromCharCode(...new Uint8Array(encrypted)));
-  const ivB64= btoa(String.fromCharCode(...iv));
+  // Safe base64 encoding for large data (avoids spread operator stack limit)
+  const b64=bytesToBase64(new Uint8Array(encrypted));
+  const ivB64=bytesToBase64(iv);
   // Build self-decrypting wrapper
   const wrapper=`(async()=>{const k="${key16}";const ivB64="${ivB64}";const dataB64="${b64}";const enc=new TextEncoder(),dec=new TextDecoder();const salt=enc.encode('cf-installer-obfuscation-salt');const km=await crypto.subtle.importKey('raw',enc.encode(k),{name:'PBKDF2'},false,['deriveKey']);const aes=await crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:1000,hash:'SHA-256'},km,{name:'AES-GCM',length:256},false,['decrypt']);const iv=Uint8Array.from(atob(ivB64),c=>c.charCodeAt(0));const data=Uint8Array.from(atob(dataB64),c=>c.charCodeAt(0));const buf=await crypto.subtle.decrypt({name:'AES-GCM',iv},aes,data);const code=dec.decode(buf);return (0,eval)(code);})();`;
   // Also add dummy vars for extra obfuscation
   let rc=''; for(let i=0;i<50;i++) rc+=`var _${crypto.randomUUID().slice(0,8)}=${Math.floor(Math.random()*100)};\n`;
   return {code: rc + wrapper, key: key16};
+}
+
+// Safe base64 encoding that handles large byte arrays without stack overflow
+function bytesToBase64(bytes){
+  let binary='';
+  const chunkSize=0x8000; // 32KB chunks to avoid stack overflow
+  for(let i=0;i<bytes.length;i+=chunkSize){
+    binary+=String.fromCharCode.apply(null,bytes.subarray(i,i+chunkSize));
+  }
+  return btoa(binary);
 }

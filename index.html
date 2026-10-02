@@ -333,21 +333,6 @@ const PANELS={
 
 };
 
-const PANELS_CONFIG={
-  nahan:{repo:'zhangkaiitugithub/workerspool',file:'pool/naaHUrl/index.js',vars:{},path:'/'},
-  edge:{repo:'everydayworker/worker-pool',file:'workers/EdgeTunnel/index.js',kv:['EdgeTunnel'],vars:{},path:'/'},
-  cfnew:{repo:'zhangkaiitugithub/workerspool',file:'pool/cfUrl/index.js',vars:{},path:'/'},
-  nova:{repo:'AresS31/Nova-Proxy',file:'worker.js',kv:['Nova'],vars:{},path:'/'},
-
-  edgtun:{repo:'xizekpan/EDtunnel-Go-Workers',file:'index.js',kv:['EDtunnel'],vars:{},path:'/'},
-  fox:{repo:'likennn/worker-falcons',file:'falcons/fox/index.js',vars:{},path:'/'},
-  amcf:{repo:'am883478014/cf-proxy',file:'cf-proxy/_worker.js',vars:{},path:'/'},
-  vtpanel:{repo:'bayueqi/ZQ-VTPanel',file:'_worker.js',kv:['VTPanel'],vars:{},path:'/'},
-  v2ray:{repo:'vfarid/v2ray-worker',file:'worker.js',release:'v2.4',kv:['settings'],vars:{},path:'/'},
-
-
-};
-
 const PANEL_STARS={
   nahan:3082,edge:41735,cfnew:14694,nova:3207,edgtun:2989,
   fox:151,amcf:3126,vtpanel:62,v2ray:195
@@ -362,13 +347,11 @@ const DEPLOY_REPOS={
   edge:{repo:'cmliu/edgetunnel',file:'_worker.js'},
   cfnew:{repo:'byjoey/cfnew',file:'\u660e\u6587\u6e90\u5417'},
   nova:{repo:'IRNova/Nova-Proxy',file:'worker.js'},
-
-  edgtun:{repo:'6Kmfi6HP/EDtunnel',file:'_worker.js'},
+  edgtun:{repo:'xizekpan/EDtunnel-Go-Workers',file:'index.js'},
   fox:{repo:'code3-dev/foxcloud',file:'worker.js',release:'v1.0.0'},
   amcf:{repo:'amclubs/am-cf-tunnel',file:'_worker.js'},
   vtpanel:{repo:'bayueqi/ZQ-VTPanel',file:'_worker.js'},
   v2ray:{repo:'vfarid/v2ray-worker',file:'worker.js',release:'v2.4'},
-
 };
 // Theme functions
 function applyTheme(t){document.documentElement.setAttribute('data-theme',t);const b=$('themeToggle');if(b)b.textContent=t==='light'?'🌙':'☀️'}
@@ -553,24 +536,14 @@ function setInstallMode(mode){
     $('deployLog').innerHTML='<span class="log-info">▸ شروع استقرار...</span>';setProgress(0,'شروع استقرار...');
     $('resultBox').style.display='none';
 
-    // Gather panel-specific vars
-    const cfg=PANELS_CONFIG[selectedPanel];
+    // Gather panel-specific vars (all panels use empty vars; subname handled separately for Nova)
     const vars={};
-    if(cfg&&cfg.vars){
-      Object.entries(cfg.vars).forEach(([k,v])=>{
-        const inp=$('var_'+k);
-        if(inp) vars[k]=inp.value.trim()||v;
-        else vars[k]=v;
-      });
-    }
-
     const payload={token,panelType:selectedPanel,installMode:deployState.installMode,vars};
-    // Bug #5: Pass SUBNAME for Nova panel
+    // Pass SUBNAME for Nova panel
     if(selectedPanel==='nova'){
       const subnameIn=$('subnameIn');
       if(subnameIn&&subnameIn.value.trim()){payload.subname=subnameIn.value.trim()}
     }
-    if(cfg&&cfg.pages) payload.pages=true;
 
     try{
       const r=await fetch(BACKEND+'/v1/deploy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
@@ -730,24 +703,13 @@ function setInstallMode(mode){
   // attachManageButtons(); // moved to worker list
 }
 
-// Show variable inputs for panels that need them
+// Show variable inputs for panels that need them (no panels currently need vars)
 function updatePanelVars(panel){
   const pv=$('panelVars');
   if(!pv){return}
-  const cfg=PANELS_CONFIG[panel];
-  if(!cfg||!cfg.vars||Object.keys(cfg.vars).length===0){
-    pv.classList.remove('show');
-    pv.innerHTML='';
-    return;
-  }
-  let html='';
-  Object.entries(cfg.vars).forEach(([k,v])=>{
-    const label=k==='uid'?'UUID (شناسه یکتای کاربر)':k==='Pswd'?'رمز Trojan':'مقدار '+k;
-    const placeholder=k==='uid'?'مثلاً: 12345678-1234-1234-1234-123456789abc':k==='Pswd'?'پیش‌فرض: trojan':v;
-    html+=`<div class="form-group" style="margin-bottom:16px"><label class="form-label">${label}</label><input type="text" class="form-input" id="var_${k}" value="${esc(v)}" placeholder="${placeholder}" style="direction:ltr;text-align:left"></div>`;
-  });
-  pv.innerHTML=html;
-  pv.classList.add('show');
+  // No panels require variable inputs currently
+  pv.classList.remove('show');
+  pv.innerHTML='';
 }
 
 
@@ -763,10 +725,20 @@ async function encryptWithWebCrypto(code, key16){
   const aes=await crypto.subtle.deriveKey({name:'PBKDF2', salt, iterations:1000, hash:'SHA-256'}, km, {name:'AES-GCM', length:256}, false, ['encrypt']);
   const iv=crypto.getRandomValues(new Uint8Array(12));
   const buf=await crypto.subtle.encrypt({name:'AES-GCM', iv}, aes, enc.encode(code));
-  const b64=btoa(String.fromCharCode(...new Uint8Array(buf)));
-  const ivB64=btoa(String.fromCharCode(...iv));
+  // Safe base64 encoding for large data
+  const b64=bytesToBase64Browser(new Uint8Array(buf));
+  const ivB64=bytesToBase64Browser(iv);
   const wrapper=`(async()=>{const k="${key16}";const ivB64="${ivB64}";const dataB64="${b64}";const enc=new TextEncoder(),dec=new TextDecoder();const salt=enc.encode('cf-installer-obfuscation-salt');const km=await crypto.subtle.importKey('raw',enc.encode(k),{name:'PBKDF2'},false,['deriveKey']);const aes=await crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:1000,hash:'SHA-256'},km,{name:'AES-GCM',length:256},false,['decrypt']);const iv=Uint8Array.from(atob(ivB64),c=>c.charCodeAt(0));const data=Uint8Array.from(atob(dataB64),c=>c.charCodeAt(0));const buf=await crypto.subtle.decrypt({name:'AES-GCM',iv},aes,data);const code=dec.decode(buf);return (0,eval)(code);})();`;
   return wrapper;
+}
+// Safe base64 encoding for browser (avoids spread operator stack limit)
+function bytesToBase64Browser(bytes){
+  let binary='';
+  const chunkSize=0x8000;
+  for(let i=0;i<bytes.length;i+=chunkSize){
+    binary+=String.fromCharCode.apply(null,bytes.subarray(i,i+chunkSize));
+  }
+  return btoa(binary);
 }
 function categorizeError(d){
   if(!d) return {msg:'خطای ناشناخته', code:'UNKNOWN', category:'SERVER_ERROR'};
@@ -787,13 +759,14 @@ async function obfuscateJS(code){
   try{
     // Try Web Crypto first for nova/edge/nahan
     const encrypted=await encryptWithWebCrypto(code, key);
-    console.log('🔒 Web Crypto obfuscation key:', key.slice(0,4)+'****');
+    toast('🔒 کلید obfuscation: '+key.slice(0,4)+'****');
     return encrypted;
   }catch(e){ console.warn('Web Crypto failed:',e); }
   if(typeof JavaScriptObfuscator==='undefined'){console.warn('obfuscator not loaded');return code}
   try{
     const result=JavaScriptObfuscator.obfuscate(code,{compact:true,controlFlowFlattening:true,controlFlowFlatteningThreshold:0.5,deadCodeInjection:true,deadCodeInjectionThreshold:0.2,stringArray:true,stringArrayEncoding:['base64'],stringArrayThreshold:0.75,renameGlobals:false,selfDefending:false,debugProtection:false});
-    return result.getObfuscatedCode()+"\n// key:"+key;
+    toast('🔒 کلید obfuscation: '+key.slice(0,4)+'****');
+    return result.getObfuscatedCode();
   }catch(e){console.warn('obfuscate failed:',e);return code}
 }
 function minifyJS(code){
@@ -806,14 +779,14 @@ async function deleteWorker(){
   if(!confirm('⚠️ آیا مطمئن هستید که می\u200cخواهید Worker "\u200f'+deployState.workerName+'\u200f" را حذف کنید?\n\nاین عمل قابل بازگشت نیست!'))return;
   toast('⏳ در حال حذف...');
   try{
-    const r=await fetch(BACKEND+'/v1/cf',{method:'POST',headers:{'Authorization':'Bearer '+deployState.token,'Content-Type':'application/json','X-CF-Path':'/accounts/'+deployState.accountId+'/workers/scripts/'+deployState.workerName,'X-CF-Method':'DELETE'}});
+    const r=await fetch(BACKEND+'/v1/delete-worker',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:deployState.token,workerName:deployState.workerName,accountId:deployState.accountId})});
     const d=await r.json();
     if(d.success){
       toast('✅ Worker حذف شد!');
       deployState={token:'',accountId:deployState.accountId,workerName:'',panelType:'',panelURL:'',panelPath:'',uuid:null};
       render();
     }else{
-      toast('❌ خطا: '+(d.errors?.[0]?.message||'حذف ناموفق'));
+      toast('❌ خطا: '+(d.error||'حذف ناموفق'));
     }
   }catch(e){toast('❌ خطا: '+e.message)}
 }

@@ -8,9 +8,9 @@
     "test:watch": "vitest",
     "test:coverage": "vitest --coverage --run",
     "dev": "wrangler dev --local",
-    "deploy": "wrangler deploy",
-    "deploy:backend": "wrangler deploy worker-backend.js",
-    "deploy:bot": "wrangler deploy bot.js"
+    "deploy": "wrangler deploy --config wrangler.backend.toml && wrangler deploy --config wrangler.toml",
+    "deploy:backend": "wrangler deploy --config wrangler.backend.toml",
+    "deploy:bot": "wrangler deploy --config wrangler.toml"
   },
   "devDependencies": {
     "vitest": "^1.6.0",

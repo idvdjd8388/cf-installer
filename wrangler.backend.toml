@@ -1,0 +1,4 @@
+name = "cf-installer-backend"
+main = "worker-backend.js"
+compatibility_date = "2024-09-22"
+compatibility_flags = ["nodejs_compat"]
